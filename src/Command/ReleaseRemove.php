@@ -7,29 +7,27 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 
-class Current extends Command {
+/**
+ * @method \Deploid\Application getApplication() return application object
+ */
+class ReleaseRemove extends Command {
 
 	protected function configure() {
-		$this->setName('deploid:current');
-		$this->setDescription('Sets the current release');
-		$this->setHelp('This command sets the current release');
+		$this->setName('release:remove');
+		$this->setDescription('Remove release directory');
+		$this->setHelp('This command remove a release directory');
 		$this->addArgument('release', InputArgument::REQUIRED, 'release directory name');
+		$this->addArgument('path', InputArgument::OPTIONAL, 'path to workdir', getcwd());
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		if (!$this->getApplication()->deploidValidate(getcwd())) {
-			$output->writeln('directory structure is invalid');
-			return 255;
-		}
-
-		if (!$this->getApplication()->deploidExistRelease($input->getArgument('release'))) {
-			$output->writeln('release directory "' . $input->getArgument('release') . '" not exists');
-			return 255;
-		}
-
+		
+		
 		$proccess = new Process([
-			'ln -s ' . getcwd() . '/releases/' . $input->getArgument('release') . ' ' . getcwd() . '/current',
+			'rm ' . rtrim($input->getArgument('path'), '/') . '/' . $input->getArgument('release'),
 		]);
+		
+		
 
 		$proccess->run();
 

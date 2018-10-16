@@ -1,0 +1,14 @@
+#!/usr/bin/php
+<?php
+require __DIR__ . '/../vendor/autoload.php';
+
+$application = new \Deploid\Application('Deploid', '1.0.0');
+
+$application->add(new \Deploid\Command\StructureInit());
+$application->add(new \Deploid\Command\StructureValidate());
+$application->add(new \Deploid\Command\ReleaseCreate());
+$application->add(new \Deploid\Command\ReleaseRemove());
+$application->add(new \Deploid\Command\ReleaseExist());
+$application->add(new \Deploid\Command\ReleaseCurrent());
+
+$application->run();
