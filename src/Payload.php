@@ -4,6 +4,19 @@ namespace Deploid;
 
 class Payload {
 
+	const STRUCTURE_VALIDATE_SUCCESS = 'structure_validate_success';
+	const STRUCTURE_VALIDATE_FAIL = 'structure_validate_fail';
+	const STRUCTURE_INIT_SUCCESS = 'structure_init_success';
+	const STRUCTURE_INIT_FAIL = 'structure_init_fail';
+	const RELEASE_EXIST_SUCCESS = 'release_exist_success';
+	const RELEASE_EXIST_FAIL = 'release_exist_fail';
+	const RELEASE_CREATE_SUCCESS = 'release_create_success';
+	const RELEASE_CREATE_FAIL = 'release_create_fail';
+	const RELEASE_REMOVE_SUCCESS = 'release_remove_success';
+	const RELEASE_REMOVE_FAIL = 'release_remove_fail';
+	const RELEASE_CURRENT_SUCCESS = 'release_current_success';
+	const RELEASE_CURRENT_FAIL = 'release_current_fail';
+
 	/** @var integer Код процесса */
 	private $code;
 

@@ -3,9 +3,34 @@
 namespace Deploid;
 
 use Symfony\Component\Console\Application as ConsoleApplication;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
-class Application extends ConsoleApplication {
+class Application extends ConsoleApplication implements LoggerAwareInterface {
+
+	/** @var LoggerInterface */
+	private $logger;
+
+	/* mutators */
+
+	/**
+	 * @return LoggerInterface
+	 */
+	public function getLogger() {
+		return $this->logger;
+	}
+
+	/**
+	 * @param LoggerInterface $logger
+	 * @return $this
+	 */
+	public function setLogger(LoggerInterface $logger) {
+		$this->logger = $logger;
+		return $this;
+	}
+
+	/* tools */
 
 	/**
 	 * @param string $path
@@ -17,7 +42,6 @@ class Application extends ConsoleApplication {
 			'test -d ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'shared',
 			'test -f ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'deploid.log',
 		]);
-
 		$proccess->run();
 
 		$payload = new Payload();
@@ -45,7 +69,6 @@ class Application extends ConsoleApplication {
 			'mkdir -r ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'shared',
 			'touch ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'deploid.log',
 		]);
-
 		$proccess->run();
 
 		$payload = new Payload();

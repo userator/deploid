@@ -1,6 +1,6 @@
 {
 	"name": "userator/deploid",
-	"description": "Описание проекта deploid.",
+	"description": "tool provides folder structure for continuous delivery of code.",
 	"authors": [
 		{
 			"name": "userator",
