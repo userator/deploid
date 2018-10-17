@@ -265,7 +265,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
 		$currentDir = realpath($path) . DIRECTORY_SEPARATOR . 'current';
 
-		$proccess = new Process('ln -s ' . $releaseDir . ' ' . $currentDir);
+		$proccess = new Process('ln -sfn ' . $releaseDir . ' ' . $currentDir);
 		$proccess->run();
 
 		$payload = new Payload();
