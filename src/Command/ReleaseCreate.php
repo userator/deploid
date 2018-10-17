@@ -28,13 +28,7 @@ class ReleaseCreate extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidReleaseCreate(date('YmdHis'), $input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_CREATE_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

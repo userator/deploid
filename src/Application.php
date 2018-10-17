@@ -212,8 +212,48 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
+		$path = $this->absolutePath($path, getcwd());
+
+		if (!is_dir($path)) {
+			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+			$payload->setMessage('path does not exist');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!is_writable($path)) {
+			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+			$payload->setMessage('path does not writable');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$releasesDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases';
+		if (!is_dir($releasesDir) && !mkdir($releasesDir, 0777)) {
+			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+			$payload->setMessage('failed to repair releases directory "' . $releasesDir . '"');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$sharedDir = realpath($path) . DIRECTORY_SEPARATOR . 'shared';
+		if (!is_dir($sharedDir) && !mkdir($sharedDir, 0777)) {
+			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+			$payload->setMessage('failed to repair shared directory "' . $sharedDir . '"');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$logFile = realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log';
+		if (!is_file($logFile) && !touch($logFile)) {
+			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+			$payload->setMessage('failed to repair log file"' . $logFile . '"');
+			$payload->setCode(255);
+			return $payload;
+		}
+
 		$payload->setType(Payload::STRUCTURE_REPAIR_SUCCESS);
-		$payload->setMessage('structure repaired by path "' . $path . '"');
+		$payload->setMessage('structure repaired');
 		$payload->setCode(0);
 		return $payload;
 	}

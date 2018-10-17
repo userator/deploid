@@ -21,9 +21,7 @@ class StructureInit extends Command {
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$payload = $this->getApplication()->deploidStructureInit($input->getArgument('path'));
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

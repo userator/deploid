@@ -21,9 +21,7 @@ class StructureValidate extends Command {
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$payload = $this->getApplication()->deploidStructureValidate($input->getArgument('path'));
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

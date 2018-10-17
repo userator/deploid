@@ -29,13 +29,7 @@ class ReleaseExist extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidReleaseExist($input->getArgument('release'), $input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_EXIST_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

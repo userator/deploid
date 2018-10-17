@@ -29,13 +29,7 @@ class ReleaseRotate extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidReleaseRotate($input->getArgument('quantity'), $input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_ROTATE_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

@@ -28,13 +28,7 @@ class ReleaseCurrent extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidReleaseCurrent($input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_CURRENT_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

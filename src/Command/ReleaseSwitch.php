@@ -29,13 +29,7 @@ class ReleaseSwitch extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidReleaseSwitch($input->getArgument('release'), $input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_SWITCH_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

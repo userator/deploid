@@ -28,13 +28,7 @@ class ReleaseList extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidReleaseList($input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_LIST_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 

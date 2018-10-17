@@ -28,13 +28,7 @@ class StructureClean extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidStructureClean($input->getArgument('path'));
-		if ($payload->getType() == Payload::STRUCTURE_CLEAN_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
 		$output->writeln($payload->getMessage());
-
 		return $payload->getCode();
 	}
 
