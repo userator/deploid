@@ -65,8 +65,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 */
 	public function deploidStructureInit($path) {
 		$proccess = new Process([
-			'mkdir -r ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'releases',
-			'mkdir -r ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'shared',
+			'mkdir ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'releases',
+			'mkdir ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'shared',
 			'touch ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'deploid.log',
 		]);
 		$proccess->run();
@@ -116,7 +116,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseCreate($release, $path) {
-		$proccess = new Process('mkdir -r ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $release);
+		$proccess = new Process('mkdir ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
 
 		$payload = new Payload();
