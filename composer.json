@@ -9,7 +9,6 @@
 	],
 	"require": {
 		"php": ">=5.6",
-		"pimple/pimple": "v3.2.3",
 		"symfony/console": "v3.4.17",
 		"symfony/process": "v3.4.17",
 		"monolog/monolog": "1.23.0"
