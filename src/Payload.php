@@ -44,6 +44,10 @@ class Payload {
 
 	const RELEASE_LIST_FAIL = 'release_list_fail';
 
+	const RELEASE_ROTATE_SUCCESS = 'release_rotate_success';
+
+	const RELEASE_ROTATE_FAIL = 'release_rotate_fail';
+
 	/** @var integer Код процесса */
 	private $code;
 

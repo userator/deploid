@@ -446,6 +446,50 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		return $payload;
 	}
 
+	/**
+	 * @param int $quantity
+	 * @param string $path
+	 * @return \Deploid\Payload
+	 */
+	public function deploidReleaseRotate($quantity, $path) {
+		$payload = new Payload();
+
+		if (!$quantity || $quantity < 1) {
+			$payload->setType(Payload::RELEASE_ROTATE_FAIL);
+			$payload->setMessage('empty or invalid quantity');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_ROTATE_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$path = $this->absolutePath($path, getcwd());
+
+		$releases = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
+
+		if (count($releases) <= $quantity) {
+			$payload->setType(Payload::RELEASE_ROTATE_SUCCESS);
+			$payload->setMessage('not found releases to rotate');
+			$payload->setCode(0);
+		}
+
+		foreach (array_reverse($releases) as $idx => $release) {
+			if ($idx <= ($quantity - 1)) continue;
+			$proccess = new Process('rm -r ' . $release);
+			$proccess->run();
+		}
+
+		$payload->setType(Payload::RELEASE_ROTATE_SUCCESS);
+		$payload->setMessage('release rotated');
+		$payload->setCode(0);
+		return $payload;
+	}
+
 	public function absolutePath($path, $cwd) {
 		if ($path[0] == '/') return $path;
 		return $cwd . DIRECTORY_SEPARATOR . $path;
