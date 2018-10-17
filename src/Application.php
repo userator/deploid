@@ -87,7 +87,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		if (!strlen($path)) {
 			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setMessage('empty path');
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -159,15 +159,69 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	}
 
 	/**
+	 * @param string $path
+	 * @return \Deploid\Payload
+	 */
+	public function deploidStructureClean($path) {
+		$payload = new Payload();
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::STRUCTURE_CLEAN_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
+		$payload->setMessage('structure cleaned by path "' . $path . '"');
+		$payload->setCode(0);
+		return $payload;
+	}
+
+	/**
+	 * @param string $path
+	 * @return \Deploid\Payload
+	 */
+	public function deploidStructureRepair($path) {
+		$payload = new Payload();
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$payload->setType(Payload::STRUCTURE_REPAIR_SUCCESS);
+		$payload->setMessage('structure repaired by path "' . $path . '"');
+		$payload->setCode(0);
+		return $payload;
+	}
+
+	/**
 	 * @param string $release
 	 * @param string $path
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseExist($release, $path) {
+		$payload = new Payload();
+
+		if (!strlen($release)) {
+			$payload->setType(Payload::RELEASE_EXIST_FAIL);
+			$payload->setMessage('empty release name');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_EXIST_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
 		$proccess = new Process('test -d ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
-
-		$payload = new Payload();
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::RELEASE_EXIST_FAIL);
@@ -188,10 +242,24 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseCreate($release, $path) {
+		$payload = new Payload();
+
+		if (!strlen($release)) {
+			$payload->setType(Payload::RELEASE_CREATE_FAIL);
+			$payload->setMessage('empty release name');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_CREATE_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
 		$proccess = new Process('mkdir ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
-
-		$payload = new Payload();
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::RELEASE_CREATE_FAIL);
@@ -212,10 +280,24 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseRemove($release, $path) {
+		$payload = new Payload();
+
+		if (!strlen($release)) {
+			$payload->setType(Payload::RELEASE_REMOVE_FAIL);
+			$payload->setMessage('empty release name');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_REMOVE_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
 		$proccess = new Process('rm -r ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
-
-		$payload = new Payload();
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::RELEASE_REMOVE_FAIL);
@@ -225,7 +307,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		}
 
 		$payload->setType(Payload::RELEASE_REMOVE_SUCCESS);
-		$payload->setMessage('release "' . $release . '" removed');
+		$payload->setMessage('release "' . ($release == "*" ? 'all' : $release) . '" removed');
 		$payload->setCode(0);
 		return $payload;
 	}
@@ -236,6 +318,13 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 */
 	public function deploidReleaseList($path) {
 		$payload = new Payload();
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_LIST_FAIL);
+			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setCode(255);
+			return $payload;
+		}
 
 		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
@@ -257,28 +346,82 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	}
 
 	/**
+	 * @param string $path
+	 * @return \Deploid\Payload
+	 */
+	public function deploidReleaseCurrent($path) {
+		$payload = new Payload();
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_CURRENT_FAIL);
+			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$path = $this->absolutePath($path, getcwd());
+
+		$link = $path . DIRECTORY_SEPARATOR . 'current';
+
+		if (!file_exists($link)) {
+			$payload->setType(Payload::RELEASE_CURRENT_FAIL);
+			$payload->setMessage('current release does not exist');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!is_link($link)) {
+			$payload->setType(Payload::RELEASE_CURRENT_FAIL);
+			$payload->setMessage('link to current release does not exist');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$linkpath = readlink($link);
+
+		if (!$linkpath) {
+			$payload->setType(Payload::RELEASE_CURRENT_FAIL);
+			$payload->setMessage('fail read link to current release');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$payload->setType(Payload::RELEASE_CURRENT_SUCCESS);
+		$payload->setMessage(basename($linkpath));
+		$payload->setCode(0);
+		return $payload;
+	}
+
+	/**
 	 * @param string $release
 	 * @param string $path
 	 * @return \Deploid\Payload
 	 */
-	public function deploidReleaseCurrent($release, $path) {
+	public function deploidReleaseSwitch($release, $path) {
+		$payload = new Payload();
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_SWITCH_FAIL);
+			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setCode(255);
+			return $payload;
+		}
+
 		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
 		$currentDir = realpath($path) . DIRECTORY_SEPARATOR . 'current';
 
 		$proccess = new Process('ln -sfn ' . $releaseDir . ' ' . $currentDir);
 		$proccess->run();
 
-		$payload = new Payload();
-
 		if (!$proccess->isSuccessful()) {
-			$payload->setType(Payload::RELEASE_CURRENT_FAIL);
+			$payload->setType(Payload::RELEASE_SWITCH_FAIL);
 			$payload->setMessage($proccess->getErrorOutput());
 			$payload->setCode($proccess->getExitCode());
 			return $payload;
 		}
 
-		$payload->setType(Payload::RELEASE_CURRENT_SUCCESS);
-		$payload->setMessage('release "' . $release . '" current setup');
+		$payload->setType(Payload::RELEASE_SWITCH_SUCCESS);
+		$payload->setMessage('release "' . $release . '" switched');
 		$payload->setCode(0);
 		return $payload;
 	}

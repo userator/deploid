@@ -17,8 +17,8 @@ class ReleaseRemove extends Command {
 		$this->setName('release:remove');
 		$this->setDescription('Remove release directory');
 		$this->setHelp('This command remove a release directory');
-		$this->addArgument('release', InputArgument::REQUIRED, 'release directory name');
-		$this->addArgument('path', InputArgument::OPTIONAL, 'path to workdir', getcwd());
+		$this->addArgument('release', InputArgument::REQUIRED, 'release name');
+		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
@@ -29,7 +29,7 @@ class ReleaseRemove extends Command {
 		}
 
 		$payload = $this->getApplication()->deploidReleaseRemove($input->getArgument('release'), $input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_CREATE_FAIL) {
+		if ($payload->getType() == Payload::RELEASE_REMOVE_FAIL) {
 			$output->writeln($payload->getMessage());
 			return $payload->getCode();
 		}

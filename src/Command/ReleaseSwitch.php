@@ -11,12 +11,13 @@ use Deploid\Payload;
 /**
  * @method \Deploid\Application getApplication() return application object
  */
-class ReleaseCreate extends Command {
+class ReleaseSwitch extends Command {
 
 	protected function configure() {
-		$this->setName('release:create');
-		$this->setDescription('Creates new release directory');
-		$this->setHelp('This command creates a release directory');
+		$this->setName('release:switch');
+		$this->setDescription('Switch the current release');
+		$this->setHelp('This command switch the current release');
+		$this->addArgument('release', InputArgument::REQUIRED, 'release name');
 		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
 	}
 
@@ -27,8 +28,8 @@ class ReleaseCreate extends Command {
 			return $payload->getCode();
 		}
 
-		$payload = $this->getApplication()->deploidReleaseCreate(date('YmdHis'), $input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_CREATE_FAIL) {
+		$payload = $this->getApplication()->deploidReleaseSwitch($input->getArgument('release'), $input->getArgument('path'));
+		if ($payload->getType() == Payload::RELEASE_SWITCH_FAIL) {
 			$output->writeln($payload->getMessage());
 			return $payload->getCode();
 		}

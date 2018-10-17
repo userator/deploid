@@ -17,7 +17,7 @@ class ReleaseList extends Command {
 		$this->setName('release:list');
 		$this->setDescription('List releases');
 		$this->setHelp('This command show list releases');
-		$this->addArgument('path', InputArgument::OPTIONAL, 'structure path', getcwd());
+		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {

@@ -17,8 +17,7 @@ class ReleaseCurrent extends Command {
 		$this->setName('release:current');
 		$this->setDescription('Sets the current release');
 		$this->setHelp('This command sets the current release');
-		$this->addArgument('release', InputArgument::REQUIRED, 'release name');
-		$this->addArgument('path', InputArgument::OPTIONAL, 'structure path', getcwd());
+		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
@@ -28,7 +27,7 @@ class ReleaseCurrent extends Command {
 			return $payload->getCode();
 		}
 
-		$payload = $this->getApplication()->deploidReleaseCurrent($input->getArgument('release'), $input->getArgument('path'));
+		$payload = $this->getApplication()->deploidReleaseCurrent($input->getArgument('path'));
 		if ($payload->getType() == Payload::RELEASE_CURRENT_FAIL) {
 			$output->writeln($payload->getMessage());
 			return $payload->getCode();

@@ -12,6 +12,14 @@ class Payload {
 
 	const STRUCTURE_INIT_FAIL = 'structure_init_fail';
 
+	const STRUCTURE_CLEAN_SUCCESS = 'structure_clean_success';
+
+	const STRUCTURE_CLEAN_FAIL = 'structure_clean_fail';
+
+	const STRUCTURE_REPAIR_SUCCESS = 'structure_repair_success';
+
+	const STRUCTURE_REPAIR_FAIL = 'structure_repair_fail';
+
 	const RELEASE_EXIST_SUCCESS = 'release_exist_success';
 
 	const RELEASE_EXIST_FAIL = 'release_exist_fail';
@@ -27,6 +35,10 @@ class Payload {
 	const RELEASE_CURRENT_SUCCESS = 'release_current_success';
 
 	const RELEASE_CURRENT_FAIL = 'release_current_fail';
+
+	const RELEASE_SWITCH_SUCCESS = 'release_switch_success';
+
+	const RELEASE_SWITCH_FAIL = 'release_switch_fail';
 
 	const RELEASE_LIST_SUCCESS = 'release_list_success';
 

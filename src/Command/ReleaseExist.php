@@ -18,7 +18,7 @@ class ReleaseExist extends Command {
 		$this->setDescription('Check exist release directory');
 		$this->setHelp('This command check exist a release directory');
 		$this->addArgument('release', InputArgument::REQUIRED, 'release name');
-		$this->addArgument('path', InputArgument::OPTIONAL, 'structure path', getcwd());
+		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
