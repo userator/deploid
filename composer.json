@@ -1,6 +1,7 @@
 {
 	"name": "userator/deploid",
 	"description": "tool provides folder structure for continuous delivery of code.",
+	"type": "library",
 	"authors": [
 		{
 			"name": "userator",
@@ -17,5 +18,13 @@
 		"psr-4": {
 			"Deploid\\": "src"
 		}
-	}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Deploid\\": "tests"
+		}
+	},
+	"bin": [
+		"bin/deploid"
+	]
 }
