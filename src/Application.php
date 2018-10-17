@@ -172,8 +172,28 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
+		$path = $this->absolutePath($path, getcwd());
+
+		$needed = [
+			'current',
+			'releases',
+			'shared',
+			'deploid.log',
+		];
+
+		$paths = glob($path . DIRECTORY_SEPARATOR . '*');
+
+		$paths = array_filter($paths, function ($path) use ($needed) {
+			return !in_array(basename($path), $needed);
+		});
+
+		foreach ($paths as $path) {
+			if (is_dir($path)) rmdir($path);
+			if (is_file($path)) unlink($path);
+		}
+
 		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
-		$payload->setMessage('structure cleaned by path "' . $path . '"');
+		$payload->setMessage(['cleaned items:'] + $paths);
 		$payload->setCode(0);
 		return $payload;
 	}

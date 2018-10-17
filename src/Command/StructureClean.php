@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Deploid\Payload;
 
 /**
  * @method \Deploid\Application getApplication() return application object
@@ -20,7 +21,17 @@ class StructureClean extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		$payload = $this->getApplication()->deploidStructureValidate($input->getArgument('path'));
+		if ($payload->getType() == Payload::STRUCTURE_VALIDATE_FAIL) {
+			$output->writeln($payload->getMessage());
+			return $payload->getCode();
+		}
+
 		$payload = $this->getApplication()->deploidStructureClean($input->getArgument('path'));
+		if ($payload->getType() == Payload::STRUCTURE_CLEAN_FAIL) {
+			$output->writeln($payload->getMessage());
+			return $payload->getCode();
+		}
 
 		$output->writeln($payload->getMessage());
 
