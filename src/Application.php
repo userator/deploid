@@ -45,7 +45,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('releases directory "' . $releasesDir . '" not exist');
+			$payload->setMessage('directory "' . $releasesDir . '" does not exist');
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -56,7 +56,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('shared directory "' . $sharedDir . '" not exist');
+			$payload->setMessage('directory "' . $sharedDir . '" does not exist');
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -67,13 +67,13 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('log file "' . $logFile . '" not exist');
+			$payload->setMessage('file "' . $logFile . '" does not exist');
 			$payload->setCode(255);
 			return $payload;
 		}
 
 		$payload->setType(Payload::STRUCTURE_VALIDATE_SUCCESS);
-		$payload->setMessage('valid structure in path "' . realpath($path) . '"');
+		$payload->setMessage('structure is valid');
 		$payload->setCode(0);
 		return $payload;
 	}
