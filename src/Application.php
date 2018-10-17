@@ -37,24 +37,43 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidStructureValidate($path) {
-		$proccess = new Process([
-			'test -d ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'releases',
-			'test -d ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'shared',
-			'test -f ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'deploid.log',
-		]);
-		$proccess->run();
-
 		$payload = new Payload();
+
+		$releasesDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases';
+		$proccess = new Process('test -d ' . $releasesDir);
+		$proccess->run();
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('structure in path "' . $path . '" not valid');
+			$payload->setMessage('releases directory "' . $releasesDir . '" not exist');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$sharedDir = realpath($path) . DIRECTORY_SEPARATOR . 'shared';
+		$proccess = new Process('test -d ' . $sharedDir);
+		$proccess->run();
+
+		if (!$proccess->isSuccessful()) {
+			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
+			$payload->setMessage('shared directory "' . $sharedDir . '" not exist');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$logFile = realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log';
+		$proccess = new Process('test -f ' . $logFile);
+		$proccess->run();
+
+		if (!$proccess->isSuccessful()) {
+			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
+			$payload->setMessage('log file "' . $logFile . '" not exist');
 			$payload->setCode(255);
 			return $payload;
 		}
 
 		$payload->setType(Payload::STRUCTURE_VALIDATE_SUCCESS);
-		$payload->setMessage('structure in path "' . $path . '" valid');
+		$payload->setMessage('valid structure in path "' . realpath($path) . '"');
 		$payload->setCode(0);
 		return $payload;
 	}
@@ -64,14 +83,67 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidStructureInit($path) {
-		$proccess = new Process([
-			'mkdir ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'releases',
-			'mkdir ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'shared',
-			'touch ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'deploid.log',
-		]);
+		$payload = new Payload();
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$path = $this->absolutePath($path, getcwd());
+
+		if (is_file($path)) {
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setMessage('path "' . $path . '" not dir');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!is_writable(dirname($path))) {
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setMessage('path "' . dirname($path) . '" not writable');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!file_exists($path) && !mkdir($path, 0777)) {
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setMessage('path "' . $path . '" not create');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		if (!is_writable($path)) {
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setMessage('path "' . $path . '" not writable');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$proccess = new Process('mkdir ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases');
 		$proccess->run();
 
-		$payload = new Payload();
+		if (!$proccess->isSuccessful()) {
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setMessage($proccess->getErrorOutput());
+			$payload->setCode($proccess->getExitCode());
+			return $payload;
+		}
+
+		$proccess = new Process('mkdir ' . realpath($path) . DIRECTORY_SEPARATOR . 'shared');
+		$proccess->run();
+
+		if (!$proccess->isSuccessful()) {
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setMessage($proccess->getErrorOutput());
+			$payload->setCode($proccess->getExitCode());
+			return $payload;
+		}
+
+		$proccess = new Process('touch ' . realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log');
+		$proccess->run();
 
 		if (!$proccess->isSuccessful()) {
 			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
@@ -81,7 +153,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		}
 
 		$payload->setType(Payload::STRUCTURE_INIT_SUCCESS);
-		$payload->setMessage('structure inited');
+		$payload->setMessage('structure initialized by path "' . $path . '"');
 		$payload->setCode(0);
 		return $payload;
 	}
@@ -92,7 +164,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseExist($release, $path) {
-		$proccess = new Process('test -d ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $release);
+		$proccess = new Process('test -d ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
 
 		$payload = new Payload();
@@ -116,7 +188,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseCreate($release, $path) {
-		$proccess = new Process('mkdir ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $release);
+		$proccess = new Process('mkdir ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
 
 		$payload = new Payload();
@@ -140,7 +212,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseRemove($release, $path) {
-		$proccess = new Process('rm -r ' . rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $release);
+		$proccess = new Process('rm -r ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
 
 		$payload = new Payload();
@@ -159,13 +231,39 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	}
 
 	/**
+	 * @param string $path
+	 * @return \Deploid\Payload
+	 */
+	public function deploidReleaseList($path) {
+		$payload = new Payload();
+
+		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
+
+		if (!$dirs) {
+			$payload->setType(Payload::RELEASE_LIST_FAIL);
+			$payload->setMessage('release not found');
+			$payload->setCode(0);
+			return $payload;
+		}
+
+		$dirs = array_map(function ($path) {
+			return basename($path);
+		}, $dirs);
+
+		$payload->setType(Payload::RELEASE_LIST_SUCCESS);
+		$payload->setMessage($dirs);
+		$payload->setCode(0);
+		return $payload;
+	}
+
+	/**
 	 * @param string $release
 	 * @param string $path
 	 * @return \Deploid\Payload
 	 */
 	public function deploidReleaseCurrent($release, $path) {
-		$releaseDir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
-		$currentDir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'current';
+		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
+		$currentDir = realpath($path) . DIRECTORY_SEPARATOR . 'current';
 
 		$proccess = new Process('ln -s ' . $releaseDir . ' ' . $currentDir);
 		$proccess->run();
@@ -183,6 +281,11 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$payload->setMessage('release "' . $release . '" current setup');
 		$payload->setCode(0);
 		return $payload;
+	}
+
+	public function absolutePath($path, $cwd) {
+		if ($path[0] == '/') return $path;
+		return $cwd . DIRECTORY_SEPARATOR . $path;
 	}
 
 }

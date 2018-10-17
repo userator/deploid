@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Deploid\Payload;
 
 /**
  * @method \Deploid\Application getApplication() return application object
@@ -21,24 +22,21 @@ class ReleaseRemove extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		
-		
-		$proccess = new Process([
-			'rm ' . rtrim($input->getArgument('path'), '/') . '/' . $input->getArgument('release'),
-		]);
-		
-		
-
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
-			$output->writeln($proccess->getErrorOutput());
-			return $proccess->getExitCode();
+		$payload = $this->getApplication()->deploidStructureValidate($input->getArgument('path'));
+		if ($payload->getType() == Payload::STRUCTURE_VALIDATE_FAIL) {
+			$output->writeln($payload->getMessage());
+			return $payload->getCode();
 		}
 
-		$output->writeln('success');
+		$payload = $this->getApplication()->deploidReleaseRemove($input->getArgument('release'), $input->getArgument('path'));
+		if ($payload->getType() == Payload::RELEASE_CREATE_FAIL) {
+			$output->writeln($payload->getMessage());
+			return $payload->getCode();
+		}
 
-		return 0;
+		$output->writeln($payload->getMessage());
+
+		return $payload->getCode();
 	}
 
 }

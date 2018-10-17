@@ -10,5 +10,6 @@ $application->add(new \Deploid\Command\ReleaseCreate());
 $application->add(new \Deploid\Command\ReleaseRemove());
 $application->add(new \Deploid\Command\ReleaseExist());
 $application->add(new \Deploid\Command\ReleaseCurrent());
+$application->add(new \Deploid\Command\ReleaseList());
 
 $application->run();

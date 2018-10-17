@@ -11,13 +11,12 @@ use Deploid\Payload;
 /**
  * @method \Deploid\Application getApplication() return application object
  */
-class ReleaseCurrent extends Command {
+class ReleaseList extends Command {
 
 	protected function configure() {
-		$this->setName('release:current');
-		$this->setDescription('Sets the current release');
-		$this->setHelp('This command sets the current release');
-		$this->addArgument('release', InputArgument::REQUIRED, 'release name');
+		$this->setName('release:list');
+		$this->setDescription('List releases');
+		$this->setHelp('This command show list releases');
 		$this->addArgument('path', InputArgument::OPTIONAL, 'structure path', getcwd());
 	}
 
@@ -28,8 +27,8 @@ class ReleaseCurrent extends Command {
 			return $payload->getCode();
 		}
 
-		$payload = $this->getApplication()->deploidReleaseCurrent($input->getArgument('release'), $input->getArgument('path'));
-		if ($payload->getType() == Payload::RELEASE_CURRENT_FAIL) {
+		$payload = $this->getApplication()->deploidReleaseList($input->getArgument('path'));
+		if ($payload->getType() == Payload::RELEASE_LIST_FAIL) {
 			$output->writeln($payload->getMessage());
 			return $payload->getCode();
 		}
