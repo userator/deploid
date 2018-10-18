@@ -228,32 +228,50 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$releasesDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases';
-		if (!is_dir($releasesDir) && !mkdir($releasesDir, 0777)) {
-			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-			$payload->setMessage('failed to repair releases directory "' . $releasesDir . '"');
-			$payload->setCode(255);
-			return $payload;
+		/* repairing */
+
+		$messages = [];
+
+		$releasesDir = $path . DIRECTORY_SEPARATOR . 'releases';
+		if (!is_dir($releasesDir)) {
+			if (mkdir($releasesDir, 0777)) {
+				$messages[] = 'directory "' . realpath($releasesDir) . '"';
+			} else {
+				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setMessage('directory "' . $releasesDir . '" does not repair');
+				$payload->setCode(255);
+				return $payload;
+			}
 		}
 
-		$sharedDir = realpath($path) . DIRECTORY_SEPARATOR . 'shared';
-		if (!is_dir($sharedDir) && !mkdir($sharedDir, 0777)) {
-			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-			$payload->setMessage('failed to repair shared directory "' . $sharedDir . '"');
-			$payload->setCode(255);
-			return $payload;
+		$sharedDir = $path . DIRECTORY_SEPARATOR . 'shared';
+		if (!is_dir($sharedDir)) {
+			if (mkdir($sharedDir, 0777)) {
+				$messages[] = 'directory "' . realpath($sharedDir) . '"';
+			} else {
+				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setMessage('directory "' . $sharedDir . '" does not repair');
+				$payload->setCode(255);
+				return $payload;
+			}
 		}
 
-		$logFile = realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log';
-		if (!is_file($logFile) && !touch($logFile)) {
-			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-			$payload->setMessage('failed to repair log file"' . $logFile . '"');
-			$payload->setCode(255);
-			return $payload;
+		$logFile = $path . DIRECTORY_SEPARATOR . 'deploid.log';
+		if (!is_file($logFile)) {
+			if (touch($logFile)) {
+				$messages[] = 'file "' . realpath($logFile) . '"';
+			} else {
+				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setMessage('file"' . $logFile . '" does not repair');
+				$payload->setCode(255);
+				return $payload;
+			}
 		}
+
+		$messages = (count($messages) > 0) ? array_merge(['repaired:'], $messages) : 'does not need repairs';
 
 		$payload->setType(Payload::STRUCTURE_REPAIR_SUCCESS);
-		$payload->setMessage('structure repaired');
+		$payload->setMessage($messages);
 		$payload->setCode(0);
 		return $payload;
 	}
