@@ -1,5 +1,5 @@
-#!/usr/bin/php
 <?php
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $application = new \Deploid\Application('Deploid', '1.0.0');
