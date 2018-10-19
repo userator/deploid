@@ -93,6 +93,10 @@ class Payload {
 	}
 
 	/* tools */
+	
+	static public function create($type = null, $message = null, $code = null) {
+		return new static($type, $message, $code);
+	}
 
 	public function toArray() {
 		return [
