@@ -63,46 +63,75 @@ class PayloadTest extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 * @covers Deploid\Payload::setCode
-	 * @todo   Implement testSetCode().
 	 */
 	public function testSetCode() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+		$code = 100;
+
+		$payload = $this->object->setCode($code);
+
+		$this->assertEquals($code, $payload->getCode());
+		$this->assertInstanceOf(Payload::class, $payload);
 	}
 
 	/**
 	 * @covers Deploid\Payload::setType
-	 * @todo   Implement testSetType().
 	 */
 	public function testSetType() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+		$type = 'success';
+
+		$payload = $this->object->setType($type);
+
+		$this->assertEquals($type, $payload->getType());
+		$this->assertInstanceOf(Payload::class, $payload);
 	}
 
 	/**
 	 * @covers Deploid\Payload::setMessage
-	 * @todo   Implement testSetMessage().
 	 */
 	public function testSetMessage() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+		$message = 'test message';
+
+		$payload = $this->object->setMessage($message);
+
+		$this->assertEquals($message, $payload->getMessage());
+		$this->assertInstanceOf(Payload::class, $payload);
+	}
+
+	/**
+	 * @covers Deploid\Payload::create
+	 */
+	public function testCreate() {
+		$type = 'type';
+		$code = 255;
+		$message = 'test message';
+
+		$payload = $this->object->create($type, $message, $code);
+
+		$this->assertEquals($type, $payload->getType());
+		$this->assertEquals($message, $payload->getMessage());
+		$this->assertEquals($code, $payload->getCode());
+		$this->assertInstanceOf(Payload::class, $payload);
 	}
 
 	/**
 	 * @covers Deploid\Payload::toArray
-	 * @todo   Implement testToArray().
 	 */
 	public function testToArray() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+		$struct = [
+			'type' => 'type',
+			'message' => 'test message',
+			'code' => 255,
+		];
+
+		$payload = clone $this->object;
+		$payload->setType($struct['type']);
+		$payload->setMessage($struct['message']);
+		$payload->setCode($struct['code']);
+
+		$this->assertEquals($struct['type'], $payload->getType());
+		$this->assertEquals($struct['message'], $payload->getMessage());
+		$this->assertEquals($struct['code'], $payload->getCode());
+		$this->assertEquals($struct, $payload->toArray());
 	}
 
 }

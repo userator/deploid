@@ -54,7 +54,7 @@ class Payload {
 	/** @var string Тип */
 	private $type;
 
-	/** @var string Сообщение */
+	/** @var string|array Сообщение */
 	private $message;
 
 	public function __construct($type = null, $message = null, $code = null) {
@@ -78,6 +78,7 @@ class Payload {
 	}
 
 	public function setCode($code) {
+		if (!\is_numeric($code)) throw new \InvalidArgumentException('expected numeric');
 		$this->code = $code;
 		return $this;
 	}
