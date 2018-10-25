@@ -4,6 +4,11 @@ ini_set("phar.readonly", 0);
 
 $pharFile = __DIR__ . '/../build/deploid.phar';
 
+if (!is_dir(__DIR__ . '/../vendor')) {
+	echo 'folder "vendor" does not exist' . PHP_EOL;
+	exit(255);
+};
+
 // clean up
 if (file_exists($pharFile)) unlink($pharFile);
 if (file_exists($pharFile . '.gz')) unlink($pharFile . '.gz');
@@ -18,4 +23,5 @@ try {
 	echo "success" . PHP_EOL;
 } catch (\Exception $e) {
 	echo $e . PHP_EOL;
+	exit(255);
 }
