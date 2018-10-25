@@ -39,6 +39,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	public function deploidStructureValidate($path) {
 		$payload = new Payload();
 
+		$path = $this->absolutePath($path, getcwd());
+
 		$releasesDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases';
 		$proccess = new Process('test -d ' . $releasesDir);
 		$proccess->run();
@@ -298,6 +300,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
+		$path = $this->absolutePath($path, getcwd());
+
 		$proccess = new Process('test -d ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
 
@@ -336,13 +340,14 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$proccess = new Process('mkdir ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
-		$proccess->run();
+		$path = $this->absolutePath($path, getcwd());
 
-		if (!$proccess->isSuccessful()) {
+		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
+
+		if (!mkdir($releaseDir, 0777, true)) {
 			$payload->setType(Payload::RELEASE_CREATE_FAIL);
-			$payload->setMessage($proccess->getErrorOutput());
-			$payload->setCode($proccess->getExitCode());
+			$payload->setMessage('release "' . $release . '" does not created');
+			$payload->setCode(255);
 			return $payload;
 		}
 
@@ -374,6 +379,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
+		$path = $this->absolutePath($path, getcwd());
+
 		$proccess = new Process('rm -r ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
 
@@ -385,7 +392,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		}
 
 		$payload->setType(Payload::RELEASE_REMOVE_SUCCESS);
-		$payload->setMessage('release "' . ($release == "*" ? 'all' : $release) . '" removed');
+		$payload->setMessage('release "' . ($release == '*' ? 'all' : $release) . '" removed');
 		$payload->setCode(0);
 		return $payload;
 	}
@@ -403,6 +410,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
+
+		$path = $this->absolutePath($path, getcwd());
 
 		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
@@ -422,7 +431,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$payload->setCode(0);
 		return $payload;
 	}
-	
+
 	/**
 	 * @param string $path
 	 * @return \Deploid\Payload
@@ -437,6 +446,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
+		$path = $this->absolutePath($path, getcwd());
+
 		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
 		if (!$dirs) {
@@ -449,7 +460,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$dirs = array_map(function ($path) {
 			return basename($path);
 		}, $dirs);
-		
+
 		if (!rsort($dirs)) {
 			$payload->setType(Payload::RELEASE_LATEST_FAIL);
 			$payload->setMessage('fail sorted');
@@ -479,7 +490,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$path = $this->absolutePath($path, getcwd());
 
-		$link = $path . DIRECTORY_SEPARATOR . 'current';
+		$link = realpath($path) . DIRECTORY_SEPARATOR . 'current';
 
 		if (!file_exists($link)) {
 			$payload->setType(Payload::RELEASE_CURRENT_FAIL);
@@ -524,6 +535,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
+
+		$path = $this->absolutePath($path, getcwd());
 
 		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
 		$currentDir = realpath($path) . DIRECTORY_SEPARATOR . 'current';
