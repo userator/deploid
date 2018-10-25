@@ -5,12 +5,22 @@ php:
   - 5.6
   - 7.0
   - 7.1
-sudo: false
+sudo: true
 branches:
   only:
   - master
+before_script:
+  - echo "comspoer install"
+  - wget https://getcomposer.org/download/1.7.2/composer.phar -O ./composer
+  - chmod +x ./composer
+  - mv ./composer /usr/local/bin/
+  - echo "phpunit install"
+  - wget https://phar.phpunit.de/phpunit-5.phar -O ./phpunit
+  - chmod +x ./phpunit
+  - mv ./phpunit /usr/local/bin/
 script:
-    - ./vendor/bin/phpunit -c phpunit.xml --colors=always
+  - /usr/local/bin/composer install --no-dev
+  - /usr/local/bin/phpunit -c phpunit.xml --colors=always
 before_deploy:
     - php -d phar.readonly=0 build/make-phar.php
 deploy:
