@@ -89,7 +89,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$messages = [];
 
 		if (!is_dir($path)) {
-			if (mkdir($path, 0777)) {
+			if (mkdir($path, 0777, true)) {
 				$messages[] = 'directory "' . realpath($path) . '" created';
 			} else {
 				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
@@ -101,7 +101,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$releasesDir = $path . DIRECTORY_SEPARATOR . 'releases';
 		if (!is_dir($releasesDir)) {
-			if (mkdir($releasesDir, 0777)) {
+			if (mkdir($releasesDir, 0777, true)) {
 				$messages[] = 'directory "' . realpath($releasesDir) . '" created';
 			} else {
 				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
@@ -113,7 +113,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$sharedDir = $path . DIRECTORY_SEPARATOR . 'shared';
 		if (!is_dir($sharedDir)) {
-			if (mkdir($sharedDir, 0777)) {
+			if (mkdir($sharedDir, 0777, true)) {
 				$messages[] = 'directory "' . realpath($sharedDir) . '" created';
 			} else {
 				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
