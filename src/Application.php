@@ -42,10 +42,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$path = $this->absolutePath($path, getcwd());
 
 		$releasesDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases';
-		$proccess = new Process('test -d ' . $releasesDir);
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
+		if (!is_dir($releasesDir)) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
 			$payload->setMessage('directory "' . $releasesDir . '" does not exist');
 			$payload->setCode(255);
@@ -53,10 +50,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		}
 
 		$sharedDir = realpath($path) . DIRECTORY_SEPARATOR . 'shared';
-		$proccess = new Process('test -d ' . $sharedDir);
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
+		if (!is_dir($sharedDir)) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
 			$payload->setMessage('directory "' . $sharedDir . '" does not exist');
 			$payload->setCode(255);
@@ -64,10 +58,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		}
 
 		$logFile = realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log';
-		$proccess = new Process('test -f ' . $logFile);
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
+		if (!is_file($logFile)) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
 			$payload->setMessage('file "' . $logFile . '" does not exist');
 			$payload->setCode(255);
@@ -214,12 +205,10 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$path = $this->absolutePath($path, getcwd());
 
-		$proccess = new Process('test -d ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release);
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
+		$releaseDir = $path . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
+		if (!is_dir($releaseDir)) {
 			$payload->setType(Payload::RELEASE_EXIST_FAIL);
-			$payload->setMessage('release "' . $release . '" in path "' . $path . '" not exist');
+			$payload->setMessage('release "' . $release . '" does not exist');
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -353,7 +342,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		if (!strlen($path)) {
 			$payload->setType(Payload::RELEASE_LATEST_FAIL);
-			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setMessage('empty path');
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -395,7 +384,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		if (!strlen($path)) {
 			$payload->setType(Payload::RELEASE_CURRENT_FAIL);
-			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setMessage('empty path');
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -508,7 +497,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		}
 
 		$payload->setType(Payload::RELEASE_ROTATE_SUCCESS);
-		$payload->setMessage('release rotated');
+		$payload->setMessage('releases are rotated');
 		$payload->setCode(0);
 		return $payload;
 	}
