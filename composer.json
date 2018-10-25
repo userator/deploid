@@ -11,6 +11,7 @@
 			"homepage": "https://github.com/userator"
 		}
 	],
+	"minimum-stability": "stable",
 	"require": {
 		"php": ">=5.6",
 		"symfony/console": "v3.4.17",
