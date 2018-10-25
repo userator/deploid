@@ -48,6 +48,10 @@ class Payload {
 
 	const RELEASE_ROTATE_FAIL = 'release_rotate_fail';
 
+	const RELEASE_LATEST_SUCCESS = 'release_latest_success';
+
+	const RELEASE_LATEST_FAIL = 'release_latest_fail';
+
 	/** @var integer Код процесса */
 	private $code;
 
@@ -94,7 +98,7 @@ class Payload {
 	}
 
 	/* tools */
-	
+
 	static public function create($type = null, $message = null, $code = null) {
 		return new static($type, $message, $code);
 	}

@@ -422,6 +422,46 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$payload->setCode(0);
 		return $payload;
 	}
+	
+	/**
+	 * @param string $path
+	 * @return \Deploid\Payload
+	 */
+	public function deploidReleaseLatest($path) {
+		$payload = new Payload();
+
+		if (!strlen($path)) {
+			$payload->setType(Payload::RELEASE_LATEST_FAIL);
+			$payload->setMessage('path "' . $path . '" invalid');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
+
+		if (!$dirs) {
+			$payload->setType(Payload::RELEASE_LATEST_FAIL);
+			$payload->setMessage('release not found');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$dirs = array_map(function ($path) {
+			return basename($path);
+		}, $dirs);
+		
+		if (!rsort($dirs)) {
+			$payload->setType(Payload::RELEASE_LATEST_FAIL);
+			$payload->setMessage('fail sorted');
+			$payload->setCode(255);
+			return $payload;
+		}
+
+		$payload->setType(Payload::RELEASE_LATEST_SUCCESS);
+		$payload->setMessage(current($dirs));
+		$payload->setCode(0);
+		return $payload;
+	}
 
 	/**
 	 * @param string $path
