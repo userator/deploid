@@ -11,12 +11,12 @@ use Deploid\Payload;
 /**
  * @method \Deploid\Application getApplication() return application object
  */
-class ReleaseSwitch extends Command {
+class ReleaseSetup extends Command {
 
 	protected function configure() {
-		$this->setName('release:switch');
-		$this->setDescription('Switch the current release');
-		$this->setHelp('This command switch the current release');
+		$this->setName('release:setup');
+		$this->setDescription('Setup the current release');
+		$this->setHelp('This command setup the current release');
 		$this->addArgument('release', InputArgument::REQUIRED, 'release name');
 		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
 	}
@@ -28,7 +28,7 @@ class ReleaseSwitch extends Command {
 			return $payload->getCode();
 		}
 
-		$payload = $this->getApplication()->deploidReleaseSwitch($input->getArgument('release'), $input->getArgument('path'));
+		$payload = $this->getApplication()->deploidReleaseSetup($input->getArgument('release'), $input->getArgument('path'));
 		$output->writeln($payload->getMessage());
 		return $payload->getCode();
 	}

@@ -13,7 +13,7 @@ $application->add(new \Deploid\Command\ReleaseRemove());
 $application->add(new \Deploid\Command\ReleaseExist());
 $application->add(new \Deploid\Command\ReleaseCurrent());
 $application->add(new \Deploid\Command\ReleaseList());
-$application->add(new \Deploid\Command\ReleaseSwitch());
+$application->add(new \Deploid\Command\ReleaseSetup());
 $application->add(new \Deploid\Command\ReleaseRotate());
 $application->add(new \Deploid\Command\ReleaseLatest());
 

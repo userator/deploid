@@ -515,11 +515,11 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 * @param string $path
 	 * @return \Deploid\Payload
 	 */
-	public function deploidReleaseSwitch($release, $path) {
+	public function deploidReleaseSetup($release, $path) {
 		$payload = new Payload();
 
 		if (!strlen($path)) {
-			$payload->setType(Payload::RELEASE_SWITCH_FAIL);
+			$payload->setType(Payload::RELEASE_SETUP_FAIL);
 			$payload->setMessage('path "' . $path . '" invalid');
 			$payload->setCode(255);
 			return $payload;
@@ -532,14 +532,14 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$proccess->run();
 
 		if (!$proccess->isSuccessful()) {
-			$payload->setType(Payload::RELEASE_SWITCH_FAIL);
+			$payload->setType(Payload::RELEASE_SETUP_FAIL);
 			$payload->setMessage($proccess->getErrorOutput());
 			$payload->setCode($proccess->getExitCode());
 			return $payload;
 		}
 
-		$payload->setType(Payload::RELEASE_SWITCH_SUCCESS);
-		$payload->setMessage('release "' . $release . '" switched');
+		$payload->setType(Payload::RELEASE_SETUP_SUCCESS);
+		$payload->setMessage('release "' . $release . '" setup');
 		$payload->setCode(0);
 		return $payload;
 	}

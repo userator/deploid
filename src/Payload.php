@@ -36,9 +36,9 @@ class Payload {
 
 	const RELEASE_CURRENT_FAIL = 'release_current_fail';
 
-	const RELEASE_SWITCH_SUCCESS = 'release_switch_success';
+	const RELEASE_SETUP_SUCCESS = 'release_setup_success';
 
-	const RELEASE_SWITCH_FAIL = 'release_switch_fail';
+	const RELEASE_SETUP_FAIL = 'release_setup_fail';
 
 	const RELEASE_LIST_SUCCESS = 'release_list_success';
 
