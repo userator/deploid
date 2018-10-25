@@ -16,10 +16,6 @@ class Payload {
 
 	const STRUCTURE_CLEAN_FAIL = 'structure_clean_fail';
 
-	const STRUCTURE_REPAIR_SUCCESS = 'structure_repair_success';
-
-	const STRUCTURE_REPAIR_FAIL = 'structure_repair_fail';
-
 	const RELEASE_EXIST_SUCCESS = 'release_exist_success';
 
 	const RELEASE_EXIST_FAIL = 'release_exist_fail';

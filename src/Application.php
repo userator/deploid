@@ -88,74 +88,64 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$payload = new Payload();
 
 		if (!strlen($path)) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
 			$payload->setMessage('empty path');
 			$payload->setCode(255);
 			return $payload;
 		}
 
 		$path = $this->absolutePath($path, getcwd());
+		$messages = [];
 
-		if (is_file($path)) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage('path "' . $path . '" not dir');
-			$payload->setCode(255);
-			return $payload;
+		if (!is_dir($path)) {
+			if (mkdir($path, 0777)) {
+				$messages[] = 'directory "' . realpath($path) . '" created';
+			} else {
+				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setMessage('directory "' . $path . '" does not created');
+				$payload->setCode(255);
+				return $payload;
+			}
 		}
 
-		if (!is_writable(dirname($path))) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage('path "' . dirname($path) . '" not writable');
-			$payload->setCode(255);
-			return $payload;
+		$releasesDir = $path . DIRECTORY_SEPARATOR . 'releases';
+		if (!is_dir($releasesDir)) {
+			if (mkdir($releasesDir, 0777)) {
+				$messages[] = 'directory "' . realpath($releasesDir) . '" created';
+			} else {
+				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setMessage('directory "' . $releasesDir . '" does not created');
+				$payload->setCode(255);
+				return $payload;
+			}
 		}
 
-		if (!file_exists($path) && !mkdir($path, 0777)) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage('path "' . $path . '" not create');
-			$payload->setCode(255);
-			return $payload;
+		$sharedDir = $path . DIRECTORY_SEPARATOR . 'shared';
+		if (!is_dir($sharedDir)) {
+			if (mkdir($sharedDir, 0777)) {
+				$messages[] = 'directory "' . realpath($sharedDir) . '" created';
+			} else {
+				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setMessage('directory "' . $sharedDir . '" does not created');
+				$payload->setCode(255);
+				return $payload;
+			}
 		}
 
-		if (!is_writable($path)) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage('path "' . $path . '" not writable');
-			$payload->setCode(255);
-			return $payload;
-		}
-
-		$proccess = new Process('mkdir ' . realpath($path) . DIRECTORY_SEPARATOR . 'releases');
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage($proccess->getErrorOutput());
-			$payload->setCode($proccess->getExitCode());
-			return $payload;
-		}
-
-		$proccess = new Process('mkdir ' . realpath($path) . DIRECTORY_SEPARATOR . 'shared');
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage($proccess->getErrorOutput());
-			$payload->setCode($proccess->getExitCode());
-			return $payload;
-		}
-
-		$proccess = new Process('touch ' . realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log');
-		$proccess->run();
-
-		if (!$proccess->isSuccessful()) {
-			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-			$payload->setMessage($proccess->getErrorOutput());
-			$payload->setCode($proccess->getExitCode());
-			return $payload;
+		$logFile = $path . DIRECTORY_SEPARATOR . 'deploid.log';
+		if (!is_file($logFile)) {
+			if (touch($logFile)) {
+				$messages[] = 'file "' . realpath($logFile) . '" created';
+			} else {
+				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setMessage('file"' . $logFile . '" does not created');
+				$payload->setCode(255);
+				return $payload;
+			}
 		}
 
 		$payload->setType(Payload::STRUCTURE_INIT_SUCCESS);
-		$payload->setMessage('structure initialized by path "' . $path . '"');
+		$payload->setMessage($messages);
 		$payload->setCode(0);
 		return $payload;
 	}
@@ -196,84 +186,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
 		$payload->setMessage(array_merge(['cleaned items:'], $paths));
-		$payload->setCode(0);
-		return $payload;
-	}
-
-	/**
-	 * @param string $path
-	 * @return \Deploid\Payload
-	 */
-	public function deploidStructureRepair($path) {
-		$payload = new Payload();
-
-		if (!strlen($path)) {
-			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-			$payload->setMessage('empty path');
-			$payload->setCode(255);
-			return $payload;
-		}
-
-		$path = $this->absolutePath($path, getcwd());
-
-		if (!is_dir($path)) {
-			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-			$payload->setMessage('path does not exist');
-			$payload->setCode(255);
-			return $payload;
-		}
-
-		if (!is_writable($path)) {
-			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-			$payload->setMessage('path does not writable');
-			$payload->setCode(255);
-			return $payload;
-		}
-
-		/* repairing */
-
-		$messages = [];
-
-		$releasesDir = $path . DIRECTORY_SEPARATOR . 'releases';
-		if (!is_dir($releasesDir)) {
-			if (mkdir($releasesDir, 0777)) {
-				$messages[] = 'directory "' . realpath($releasesDir) . '"';
-			} else {
-				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-				$payload->setMessage('directory "' . $releasesDir . '" does not repair');
-				$payload->setCode(255);
-				return $payload;
-			}
-		}
-
-		$sharedDir = $path . DIRECTORY_SEPARATOR . 'shared';
-		if (!is_dir($sharedDir)) {
-			if (mkdir($sharedDir, 0777)) {
-				$messages[] = 'directory "' . realpath($sharedDir) . '"';
-			} else {
-				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-				$payload->setMessage('directory "' . $sharedDir . '" does not repair');
-				$payload->setCode(255);
-				return $payload;
-			}
-		}
-
-		$logFile = $path . DIRECTORY_SEPARATOR . 'deploid.log';
-		if (!is_file($logFile)) {
-			if (touch($logFile)) {
-				$messages[] = 'file "' . realpath($logFile) . '"';
-			} else {
-				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
-				$payload->setMessage('file"' . $logFile . '" does not repair');
-				$payload->setCode(255);
-				return $payload;
-			}
-		}
-
-		$messages = (count($messages) > 0) ? array_merge(['repaired:'], $messages) : 'does not need repairs';
-
-		$payload->setType(Payload::STRUCTURE_REPAIR_SUCCESS);
-		$payload->setMessage($messages);
 		$payload->setCode(0);
 		return $payload;
 	}
