@@ -170,8 +170,11 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		});
 
 		foreach ($paths as $pathname) {
-			if (is_dir($pathname)) rmdir($pathname);
-			if (is_file($pathname)) unlink($pathname);
+			if (is_dir($pathname)) {
+				rmdir($pathname);
+			} else if (is_file($pathname)) {
+				unlink($pathname);
+			}
 		}
 
 		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
