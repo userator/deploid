@@ -1,4 +1,4 @@
-# deploid
+# Deploid
 
 [![Build Status](https://travis-ci.org/userator/deploid.svg?branch=master)](https://travis-ci.org/userator/deploid)
 
