@@ -79,7 +79,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$payload = new Payload();
 
 		if (!strlen($path)) {
-			$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 			$payload->setMessage('empty path');
 			$payload->setCode(255);
 			return $payload;
@@ -92,7 +92,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			if (mkdir($path, 0777, true)) {
 				$messages[] = 'directory "' . realpath($path) . '" created';
 			} else {
-				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 				$payload->setMessage('directory "' . $path . '" does not created');
 				$payload->setCode(255);
 				return $payload;
@@ -104,7 +104,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			if (mkdir($releasesDir, 0777, true)) {
 				$messages[] = 'directory "' . realpath($releasesDir) . '" created';
 			} else {
-				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 				$payload->setMessage('directory "' . $releasesDir . '" does not created');
 				$payload->setCode(255);
 				return $payload;
@@ -116,7 +116,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			if (mkdir($sharedDir, 0777, true)) {
 				$messages[] = 'directory "' . realpath($sharedDir) . '" created';
 			} else {
-				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 				$payload->setMessage('directory "' . $sharedDir . '" does not created');
 				$payload->setCode(255);
 				return $payload;
@@ -128,7 +128,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			if (touch($logFile)) {
 				$messages[] = 'file "' . realpath($logFile) . '" created';
 			} else {
-				$payload->setType(Payload::STRUCTURE_REPAIR_FAIL);
+				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 				$payload->setMessage('file"' . $logFile . '" does not created');
 				$payload->setCode(255);
 				return $payload;
