@@ -318,7 +318,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
-		if (!$dirs) {
+		if (empty($dirs)) {
 			$payload->setType(Payload::RELEASE_LIST_FAIL);
 			$payload->setMessage('release not found');
 			$payload->setCode(0);
@@ -353,7 +353,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
-		if (!$dirs) {
+		if (empty($dirs)) {
 			$payload->setType(Payload::RELEASE_LATEST_FAIL);
 			$payload->setMessage('release not found');
 			$payload->setCode(255);
