@@ -18,9 +18,14 @@ before_script:
   - wget https://phar.phpunit.de/phpunit-5.phar -O ./phpunit
   - chmod +x ./phpunit
   - sudo mv ./phpunit /usr/local/bin/
+  - echo "ocular install"
+  - wget https://scrutinizer-ci.com/ocular.phar -O ./ocular
+  - chmod +x ./ocular
+  - sudo mv ./ocular /usr/local/bin/
 script:
   - /usr/local/bin/composer install --no-dev
   - /usr/local/bin/phpunit -c phpunit.xml --colors=always
+  - /usr/local/bin/ocular code-coverage:upload --format=php-clover coverage.clover
 before_deploy:
     - php -d phar.readonly=0 build/make-phar.php
 deploy:
