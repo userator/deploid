@@ -23,11 +23,10 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 	/**
 	 * @param LoggerInterface $logger
-	 * @return $this
+	 * @return void
 	 */
 	public function setLogger(LoggerInterface $logger) {
 		$this->logger = $logger;
-		return $this;
 	}
 
 	/* tools */
@@ -170,9 +169,9 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return !in_array(basename($path), $needed);
 		});
 
-		foreach ($paths as $path) {
-			if (is_dir($path)) rmdir($path);
-			if (is_file($path)) unlink($path);
+		foreach ($paths as $pathname) {
+			if (is_dir($pathname)) rmdir($pathname);
+			if (is_file($pathname)) unlink($pathname);
 		}
 
 		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
