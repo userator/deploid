@@ -61,7 +61,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 * @covers Deploid\Application::deploidStructureValidate
 	 * @depends testDeploidStructureInit
 	 */
-	public function testDeploidStructureValidate(Payload $initPayload) {
+	public function testDeploidStructureValidate(Payload $payloadInit) {
 		// Remove the following lines when you implement this test.
 		$this->markTestIncomplete(
 				'This test has not been implemented yet.'
@@ -85,18 +85,32 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 * @covers Deploid\Application::deploidStructureClean
 	 * @depends testDeploidStructureInit
 	 */
-	public function testDeploidStructureClean(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidStructureClean(Payload $payloadInit) {
+		$needlessDir = $this->path . DIRECTORY_SEPARATOR . 'needless';
+		$isMkdir = mkdir($needlessDir);
+
+		$needlessFile = $this->path . DIRECTORY_SEPARATOR . 'needless.log';
+		$isTouch = touch($needlessFile);
+
+		$pathsBad = glob($this->path . DIRECTORY_SEPARATOR . '*');
+		$payload = $this->object->deploidStructureClean($this->path);
+		$pathsGood = glob($this->path . DIRECTORY_SEPARATOR . '*');
+
+		$this->assertNotFalse($isMkdir);
+		$this->assertNotFalse($isTouch);
+		$this->assertNotFalse($pathsBad);
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertNotFalse($pathsGood);
+		$this->assertNotEquals($pathsGood, $pathsBad);
+		$this->assertDirectoryNotExists($needlessDir);
+		$this->assertFileNotExists($needlessFile);
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseExist
 	 * @depends testDeploidReleaseLatest
 	 */
-	public function testDeploidReleaseExist(Payload $payload) {
+	public function testDeploidReleaseExist(Payload $payloadLatest) {
 		// Remove the following lines when you implement this test.
 		$this->markTestIncomplete(
 				'This test has not been implemented yet.'
