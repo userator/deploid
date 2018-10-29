@@ -87,7 +87,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testDeploidStructureClean(Payload $payloadInit) {
 		$needlessDir = $this->path . DIRECTORY_SEPARATOR . 'needless';
-		$isMkdir = mkdir($needlessDir);
+		$isMkdir = mkdir($needlessDir, 0777, true);
 
 		$needlessFile = $this->path . DIRECTORY_SEPARATOR . 'needless.log';
 		$isTouch = touch($needlessFile);
@@ -96,8 +96,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$payload = $this->object->deploidStructureClean($this->path);
 		$pathsGood = glob($this->path . DIRECTORY_SEPARATOR . '*');
 
-		$this->assertNotFalse($isMkdir);
-		$this->assertNotFalse($isTouch);
+		$this->assertNotFalse($isMkdir, $needlessDir);
+		$this->assertNotFalse($isTouch, $needlessFile);
 		$this->assertNotFalse($pathsBad);
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertNotFalse($pathsGood);
