@@ -12,6 +12,14 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	/** @var LoggerInterface */
 	private $logger;
 
+	/** @var array */
+	private $structure = [
+		'current',
+		'releases',
+		'shared',
+		'deploid.log',
+	];
+
 	/* mutators */
 
 	/**
@@ -27,6 +35,14 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	 */
 	public function setLogger(LoggerInterface $logger) {
 		$this->logger = $logger;
+	}
+
+	public function getStructure() {
+		return $this->structure;
+	}
+
+	public function setStructure($structure) {
+		$this->structure = $structure;
 	}
 
 	/* tools */
@@ -158,15 +174,8 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$paths = glob(realpath($path) . DIRECTORY_SEPARATOR . '*');
 
-		$needed = [
-			'current',
-			'releases',
-			'shared',
-			'deploid.log',
-		];
-
-		$paths = array_filter($paths, function ($path) use ($needed) {
-			return !in_array(basename($path), $needed);
+		$paths = array_filter($paths, function ($path) {
+			return !in_array(basename($path), $this->structure);
 		});
 
 		foreach ($paths as $pathname) {
