@@ -90,13 +90,27 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 * @covers Deploid\Application::deploidStructureInit
 	 */
 	public function testDeploidStructureInit() {
+		$releasesDir = 'releases';
+		$releaseNameDir = 'releases/' . date($this->object->getReleaseNameFormat());
+		$sharedDir = 'shared';
+		$deploidFile = 'deploid.log';
+		$currentLink = 'current';
+
+		$structureClean = [];
+		$structureClean['dirs'][] = $releasesDir;
+		$structureClean['dirs'][] = $releaseNameDir;
+		$structureClean['dirs'][] = $sharedDir;
+		$structureClean['files'][] = $deploidFile;
+		$structureClean['links'][] = $currentLink . ':' . $releaseNameDir;
+		$this->object->setStructure($structureClean);
+
 		$payload = $this->object->deploidStructureInit($this->path);
 
-		$this->assertEquals(0, $payload->getCode());
-		$this->assertDirectoryExists($this->path);
-		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'releases');
-		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'shared');
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'deploid.log');
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releaseNameDir);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $sharedDir);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 
 		return $payload;
 	}
@@ -105,43 +119,42 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 * @covers Deploid\Application::deploidStructureClean
 	 */
 	public function testDeploidStructureClean() {
-		$structure = [
-			'dirs' => [
-				'releases',
-				'releases/first',
-				'shared',
-			],
-			'files' => [
-				'deploid.log',
-			],
-			'links' => [
-				'current:releases/first',
-			]
-		];
-		$this->object->makeStructure($this->path, $structure);
+		$releasesDir = 'releases';
+		$releaseNameDir = 'releases/' . date($this->object->getReleaseNameFormat());
+		$sharedDir = 'shared';
+		$needlessDir = 'needless';
+		$deploidFile = 'deploid.log';
+		$needlessFile = 'needless.log';
+		$currentLink = 'current';
 
-		$pathsInit = glob($this->path . DIRECTORY_SEPARATOR . '*');
+		$structureClean = [];
+		$structureClean['dirs'][] = $releasesDir;
+		$structureClean['dirs'][] = $releaseNameDir;
+		$structureClean['dirs'][] = $sharedDir;
+		$structureClean['files'][] = $deploidFile;
+		$structureClean['links'][] = $currentLink . ':' . $releaseNameDir;
+		$this->object->setStructure($structureClean);
 
-		$needlessDir = $this->path . DIRECTORY_SEPARATOR . 'needless';
-		$isMkdir = mkdir($needlessDir);
+		$structureDirty = [];
+		$structureDirty['dirs'][] = $releasesDir;
+		$structureDirty['dirs'][] = $releaseNameDir;
+		$structureDirty['dirs'][] = $sharedDir;
+		$structureDirty['dirs'][] = $needlessDir;
+		$structureDirty['files'][] = $deploidFile;
+		$structureDirty['files'][] = $needlessFile;
+		$structureDirty['links'][] = $currentLink . ':' . $releaseNameDir;
+		$this->object->makeStructure($this->path, $structureDirty);
 
-		$needlessFile = $this->path . DIRECTORY_SEPARATOR . 'needless.log';
-		$isTouch = touch($needlessFile);
-
-		$pathsBad = glob($this->path . DIRECTORY_SEPARATOR . '*');
 		$payload = $this->object->deploidStructureClean($this->path);
-		$pathsGood = glob($this->path . DIRECTORY_SEPARATOR . '*');
 
-		$this->assertNotFalse($pathsInit);
-		$this->assertNotFalse($isMkdir, $needlessDir);
-		$this->assertNotFalse($isTouch, $needlessFile);
-		$this->assertNotFalse($pathsBad);
 		$this->assertEquals(0, $payload->getCode());
-		$this->assertNotFalse($pathsGood);
-		$this->assertEquals($pathsInit, $pathsGood);
-		$this->assertNotEquals($pathsGood, $pathsBad);
-		$this->assertDirectoryNotExists($needlessDir);
-		$this->assertFileNotExists($needlessFile);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releaseNameDir);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $sharedDir);
+		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $needlessDir);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $needlessFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 
 		return $payload;
 	}
@@ -364,6 +377,37 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->markTestIncomplete(
 				'This test has not been implemented yet.'
 		);
+	}
+
+	/**
+	 * @covers Deploid\Application::makeStructure
+	 */
+	public function testMakeStructure() {
+		$structure = [
+			'dirs' => [
+				'releases',
+				'releases/first',
+				'logs',
+			],
+			'files' => [
+				'history.txt',
+				'logs/deploid.log',
+			],
+			'links' => [
+				'current:releases/first',
+			],
+		];
+
+		$this->object->makeStructure($this->path, $structure);
+
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'releases');
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'releases/first');
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'logs');
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'history.txt');
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'logs/deploid.txt');
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'current');
+		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . 'current'));
+		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . 'releases/first'), realpath(readlink($this->path . DIRECTORY_SEPARATOR . 'current')));
 	}
 
 }

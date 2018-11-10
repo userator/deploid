@@ -63,6 +63,21 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$this->structure = $structure;
 	}
 
+	public function makeStructure($path, array $structure) {
+		if (empty($path)) throw new \InvalidArgumentException('empty path');
+		if (empty($structure)) throw new \InvalidArgumentException('empty structure');
+
+		foreach ($structure as $sections) {
+			foreach ($sections as $section => $item) {
+				if ($section == 'dirs' && strlen($item)) mkdir($path . DIRECTORY_SEPARATOR . $item, 0777, true);
+				if ($section == 'files' && strlen($item)) touch($path . DIRECTORY_SEPARATOR . $item);
+				if ($section == 'links' && strlen($item)) link($path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]), $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]));
+			}
+		}
+
+		return true;
+	}
+
 	/* tools */
 
 	/**
@@ -532,18 +547,12 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	}
 
 	public function absolutePath($path, $cwd) {
-		if ($path[0] == '/') return $path;
-		return $cwd . DIRECTORY_SEPARATOR . $path;
-	}
+		if (empty($path)) throw new \InvalidArgumentException('empty path');
+		if (empty($cwd)) throw new \InvalidArgumentException('empty cwd');
 
-	public function makeStructure($path, array $structure) {
-		foreach ($structure as $sections) {
-			foreach ($sections as $section => $item) {
-				if ($section == 'dirs' && strlen($item)) mkdir($path . DIRECTORY_SEPARATOR . $item, 0777, true);
-				if ($section == 'files' && strlen($item)) touch($path . DIRECTORY_SEPARATOR . $item);
-				if ($section == 'links' && strlen($item)) link($path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]), $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]));
-			}
-		}
+		if ($path[0] == '/') return $path;
+
+		return $cwd . DIRECTORY_SEPARATOR . $path;
 	}
 
 }
