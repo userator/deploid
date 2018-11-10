@@ -541,7 +541,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			foreach ($sections as $section => $item) {
 				if ($section == 'dirs' && strlen($item)) mkdir($path . DIRECTORY_SEPARATOR . $item, 0777, true);
 				if ($section == 'files' && strlen($item)) touch($path . DIRECTORY_SEPARATOR . $item);
-				if ($section == 'links' && strlen($item)) link($path . DIRECTORY_SEPARATOR . explode(':', $item)[0], $path . DIRECTORY_SEPARATOR . explode(':', $item)[1]);
+				if ($section == 'links' && strlen($item)) link($path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]), $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]));
 			}
 		}
 	}
