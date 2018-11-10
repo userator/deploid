@@ -24,6 +24,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	protected function setUp() {
 		$this->object = new Application;
 		$this->path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . strtolower(__NAMESPACE__);
+		$this->createWorkDir($this->path);
 	}
 
 	/**
@@ -31,7 +32,24 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 * This method is called after a test is executed.
 	 */
 	protected function tearDown() {
-		$process = new \Symfony\Component\Process\Process('rm -rf ' . $this->path);
+		$this->object = null;
+		$this->path = null;
+		$this->removeWorkDir($this->path);
+	}
+
+	/**
+	 * @param string $path
+	 */
+	private function createWorkDir($path) {
+		$process = new \Symfony\Component\Process\Process('mkdir ' . $path);
+		$process->run();
+	}
+
+	/**
+	 * @param string $path
+	 */
+	private function removeWorkDir($path) {
+		$process = new \Symfony\Component\Process\Process('rm -rf ' . $path);
 		$process->run();
 	}
 
@@ -59,9 +77,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 * @covers Deploid\Application::deploidStructureValidate
-	 * @depends testDeploidStructureInit
 	 */
-	public function testDeploidStructureValidate(Payload $payloadInit) {
+	public function testDeploidStructureValidate() {
 		// Remove the following lines when you implement this test.
 		$this->markTestIncomplete(
 				'This test has not been implemented yet.'
@@ -73,21 +90,39 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testDeploidStructureInit() {
 		$payload = $this->object->deploidStructureInit($this->path);
+
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertDirectoryExists($this->path);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'releases');
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'shared');
 		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'deploid.log');
+
 		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidStructureClean
-	 * @depends testDeploidStructureInit
 	 */
-	public function testDeploidStructureClean(Payload $payloadInit) {
+	public function testDeploidStructureClean() {
+		$structure = [
+			'dirs' => [
+				'releases',
+				'releases/first',
+				'shared',
+			],
+			'files' => [
+				'deploid.log',
+			],
+			'links' => [
+				'current:releases/first',
+			]
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$pathsInit = glob($this->path . DIRECTORY_SEPARATOR . '*');
+
 		$needlessDir = $this->path . DIRECTORY_SEPARATOR . 'needless';
-		$isMkdir = mkdir($needlessDir, 0777, true);
+		$isMkdir = mkdir($needlessDir);
 
 		$needlessFile = $this->path . DIRECTORY_SEPARATOR . 'needless.log';
 		$isTouch = touch($needlessFile);
@@ -96,102 +131,227 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$payload = $this->object->deploidStructureClean($this->path);
 		$pathsGood = glob($this->path . DIRECTORY_SEPARATOR . '*');
 
+		$this->assertNotFalse($pathsInit);
 		$this->assertNotFalse($isMkdir, $needlessDir);
 		$this->assertNotFalse($isTouch, $needlessFile);
 		$this->assertNotFalse($pathsBad);
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertNotFalse($pathsGood);
+		$this->assertEquals($pathsInit, $pathsGood);
 		$this->assertNotEquals($pathsGood, $pathsBad);
 		$this->assertDirectoryNotExists($needlessDir);
 		$this->assertFileNotExists($needlessFile);
+
+		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseExist
-	 * @depends testDeploidReleaseLatest
 	 */
-	public function testDeploidReleaseExist(Payload $payloadLatest) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseExist() {
+		$releasesDir = 'releases';
+		$releaseNameExist = date($this->object->getReleaseNameFormat());
+		$releaseNameNotExist = date($this->object->getReleaseNameFormat(), time() + 3600);
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameExist,
+			],
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payloadSuccess = $this->object->deploidReleaseExist($releaseNameExist, $this->path);
+		$payloadFail = $this->object->deploidReleaseExist($releaseNameNotExist, $this->path);
+
+		$this->assertEquals(0, $payloadSuccess->getCode());
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameExist);
+
+		$this->assertNotEquals(0, $payloadFail->getCode());
+		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameNotExist);
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseCreate
-	 * @depends testDeploidStructureInit
 	 */
-	public function testDeploidReleaseCreate(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseCreate() {
+		$releasesDir = 'releases';
+		$releaseName = date($this->object->getReleaseNameFormat());
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+			],
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseCreate($releaseName, $this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
+
+		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseRemove
-	 * @depends testDeploidReleaseLatest
 	 */
-	public function testDeploidReleaseRemove(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseRemove() {
+		$releasesDir = 'releases';
+		$releaseName = date($this->object->getReleaseNameFormat());
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseName,
+			],
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseRemove($releaseName, $this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
+
+		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseList
-	 * @depends testDeploidReleaseCreate
 	 */
-	public function testDeploidReleaseList(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseList() {
+		$releasesDir = 'releases';
+		$releaseName = date($this->object->getReleaseNameFormat());
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseName,
+			],
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseList($this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertEquals([$releaseName], $payload->getMessage());
+
+		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseLatest
-	 * @depends testDeploidReleaseCreate
 	 */
-	public function testDeploidReleaseLatest(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseLatest() {
+		$releasesDir = 'releases';
+		$releaseNameFirst = date($this->object->getReleaseNameFormat());
+		$releaseNameLast = date($this->object->getReleaseNameFormat(), time() + 3600);
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast,
+			],
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseLatest($this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertEquals($releaseNameLast, $payload->getMessage());
+
+		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseCurrent
-	 * @depends testDeploidReleaseSetup
 	 */
-	public function testDeploidReleaseCurrent(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseCurrent() {
+		$releasesDir = 'releases';
+		$releaseName = date($this->object->getReleaseNameFormat());
+		$currentLink = 'current';
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseName,
+			],
+			'links' => [
+				$currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName,
+			]
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseCurrent($this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertEquals($releaseName, $payload->getMessage());
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
+
+		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseSetup
-	 * @depends testDeploidReleaseCreate
 	 */
-	public function testDeploidReleaseSetup(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseSetup() {
+		$releasesDir = 'releases';
+		$releaseNameFirst = date($this->object->getReleaseNameFormat());
+		$releaseNameLast = date($this->object->getReleaseNameFormat(), time() + 3600);
+		$currentLink = 'current';
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast,
+			],
+			'links' => [
+				$currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
+			]
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseSetup($releaseNameLast, $this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertContains($releaseNameLast, $payload->getMessage());
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast);
+		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
+
+		return $payload;
 	}
 
 	/**
 	 * @covers Deploid\Application::deploidReleaseRotate
-	 * @depends testDeploidReleaseCreate
 	 */
-	public function testDeploidReleaseRotate(Payload $payload) {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testDeploidReleaseRotate() {
+		$releasesDir = 'releases';
+		$releaseNameFirst = date($this->object->getReleaseNameFormat());
+		$releaseNameLast = date($this->object->getReleaseNameFormat(), time() + 3600);
+		$quantity = 1;
+
+
+		$structure = [
+			'dirs' => [
+				$releasesDir,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
+				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast,
+			],
+		];
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseRotate($quantity, $this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast);
+		$this->assertCount($quantity, glob($this->path . DIRECTORY_SEPARATOR . $releasesDir));
+
+		return $payload;
 	}
 
 	/**

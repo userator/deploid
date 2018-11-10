@@ -27,7 +27,9 @@ class ReleaseCreate extends Command {
 			return $payload->getCode();
 		}
 
-		$payload = $this->getApplication()->deploidReleaseCreate(date('Y-m-d_H-i-s'), $input->getArgument('path'));
+		$releaseName = date($this->getApplication()->getReleaseNameFormat());
+
+		$payload = $this->getApplication()->deploidReleaseCreate($releaseName, $input->getArgument('path'));
 		$output->writeln($payload->getMessage());
 		return $payload->getCode();
 	}

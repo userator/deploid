@@ -9,18 +9,36 @@ use Symfony\Component\Process\Process;
 
 class Application extends ConsoleApplication implements LoggerAwareInterface {
 
-	/** @var LoggerInterface */
-	private $logger;
+	/** @var string */
+	private $releaseNameFormat = 'Y-m-d_H-i-s';
 
 	/** @var array */
 	private $structure = [
-		'current',
-		'releases',
-		'shared',
-		'deploid.log',
+		'dirs' => [
+			'releases',
+			'releases/first',
+			'shared',
+		],
+		'files' => [
+			'deploid.log',
+		],
+		'links' => [
+			'current:releases/first',
+		],
 	];
 
+	/** @var LoggerInterface */
+	private $logger;
+
 	/* mutators */
+
+	public function getReleaseNameFormat() {
+		return $this->releaseNameFormat;
+	}
+
+	public function setReleaseNameFormat($releaseNameFormat) {
+		$this->releaseNameFormat = $releaseNameFormat;
+	}
 
 	/**
 	 * @return LoggerInterface
@@ -41,7 +59,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		return $this->structure;
 	}
 
-	public function setStructure($structure) {
+	public function setStructure(array $structure) {
 		$this->structure = $structure;
 	}
 
@@ -175,7 +193,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$paths = glob(realpath($path) . DIRECTORY_SEPARATOR . '*');
 
 		$paths = array_filter($paths, function ($path) {
-			return !in_array(basename($path), $this->structure);
+			return !in_array(basename($path), $this->structure['dirs'] + $this->structure['links'] + $this->structure['files']);
 		});
 
 		foreach ($paths as $pathname) {
@@ -516,6 +534,16 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	public function absolutePath($path, $cwd) {
 		if ($path[0] == '/') return $path;
 		return $cwd . DIRECTORY_SEPARATOR . $path;
+	}
+
+	public function makeStructure($path, array $structure) {
+		foreach ($structure as $sections) {
+			foreach ($sections as $section => $item) {
+				if ($section == 'dirs') mkdir($path . DIRECTORY_SEPARATOR . $item);
+				if ($section == 'files') touch($path . DIRECTORY_SEPARATOR . $item);
+				if ($section == 'links') link($path . DIRECTORY_SEPARATOR . explode(':', $item)[0], $path . DIRECTORY_SEPARATOR . explode(':', $item)[1]);
+			}
+		}
 	}
 
 }
