@@ -18,23 +18,24 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	protected $path;
 
 	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
+	 * @after
 	 */
 	protected function setUp() {
 		$this->object = new Application;
 		$this->path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . strtolower(__NAMESPACE__);
-		$this->createWorkDir($this->path);
 	}
 
-	/**
-	 * Tears down the fixture, for example, closes a network connection.
-	 * This method is called after a test is executed.
-	 */
 	protected function tearDown() {
 		$this->object = null;
 		$this->path = null;
+	}
+
+	/**
+	 * @before
+	 */
+	protected function resetWorkDir() {
 		$this->removeWorkDir($this->path);
+		$this->createWorkDir($this->path);
 	}
 
 	/**
