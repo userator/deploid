@@ -279,7 +279,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertEquals($releaseName, $payload->getMessage());
-		$this->assertDirectorExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 
 		return $payload;
