@@ -356,12 +356,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$currentLink = 'current';
 
 		$structure = [];
-		$structure['dirs'] = $releasesDir;
-		$structure['dirs'] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
-		$structure['dirs'] = $logsDir;
-		$structure['files'] = $historyFile;
-		$structure['files'] = $logsDir . DIRECTORY_SEPARATOR . $deploidFile;
-		$structure['links'] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$structure['dirs'][] = $logsDir;
+		$structure['files'][] = $historyFile;
+		$structure['files'][] = $logsDir . DIRECTORY_SEPARATOR . $deploidFile;
+		$structure['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 
 		$this->object->makeStructure($this->path, $structure);
 

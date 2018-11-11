@@ -160,7 +160,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			}
 		}
 
-		foreach ($structure as $section => $items) {
+		foreach ($this->structure as $section => $items) {
 			if (empty($items)) continue;
 			foreach ($items as $item) {
 				if (empty($item)) continue;
