@@ -144,7 +144,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
 
-
 		return $payload;
 	}
 

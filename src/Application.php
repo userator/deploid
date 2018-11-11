@@ -13,7 +13,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	private $releaseNameFormat = 'Y-m-d_H-i-s';
 
 	/** @var string */
-	private $chmod = '0775';
+	private $chmod = '0777';
 
 	/** @var array */
 	private $structure = [
