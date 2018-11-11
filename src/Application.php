@@ -212,10 +212,12 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		});
 
 		foreach ($paths as $pathname) {
-			if (is_dir($pathname)) {
-				rmdir($pathname);
-			} else if (is_file($pathname)) {
+			if (is_file($pathname)) {
 				unlink($pathname);
+			} else if (is_link($pathname)) {
+				unlink($pathname);
+			} else if (is_dir($pathname)) {
+				rmdir($pathname);
 			}
 		}
 

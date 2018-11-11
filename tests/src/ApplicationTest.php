@@ -55,28 +55,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::getLogger
-	 * @todo   Implement testGetLogger().
-	 */
-	public function testGetLogger() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
-	}
-
-	/**
-	 * @covers Deploid\Application::setLogger
-	 * @todo   Implement testSetLogger().
-	 */
-	public function testSetLogger() {
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
-	}
-
-	/**
 	 * @covers Deploid\Application::deploidStructureValidate
 	 */
 	public function testDeploidStructureValidate() {
@@ -154,7 +132,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $needlessDir);
 		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
 		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $needlessFile);
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 
 		return $payload;
 	}
@@ -301,7 +279,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertEquals($releaseName, $payload->getMessage());
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
+		$this->assertDirectorExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 
 		return $payload;
@@ -332,7 +310,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertContains($releaseNameLast, $payload->getMessage());
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast);
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
 
@@ -347,7 +325,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$releaseNameFirst = date($this->object->getReleaseNameFormat());
 		$releaseNameLast = date($this->object->getReleaseNameFormat(), time() + 3600);
 		$quantity = 1;
-
 
 		$structure = [
 			'dirs' => [
@@ -405,7 +382,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'logs');
 		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'history.txt');
 		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'logs/deploid.txt');
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . 'current');
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . 'current');
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . 'current'));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . 'releases/first'), realpath(readlink($this->path . DIRECTORY_SEPARATOR . 'current')));
 	}
