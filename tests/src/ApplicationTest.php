@@ -18,7 +18,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	protected $path;
 
 	/**
-	 * @after
+	 * @before
 	 */
 	protected function setUp() {
 		$this->object = new Application;
@@ -27,6 +27,9 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->createWorkDir($this->path);
 	}
 
+	/**
+	 * @after
+	 */
 	protected function tearDown() {
 		$this->removeWorkDir($this->path);
 		$this->object = null;
