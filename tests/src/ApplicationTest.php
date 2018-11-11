@@ -17,31 +17,23 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	protected $path;
 
-	/**
-	 * @before
-	 */
 	protected function setUp() {
-		$this->object = new Application;
-		$this->path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . strtolower(__NAMESPACE__);
-		$this->removeWorkDir($this->path);
-		$this->createWorkDir($this->path);
+		$this->object = new Application();
+		$this->path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . strtolower(__NAMESPACE__) . DIRECTORY_SEPARATOR . uniqid();
 	}
 
-	/**
-	 * @after
-	 */
 	protected function tearDown() {
-		$this->removeWorkDir($this->path);
 		$this->object = null;
 		$this->path = null;
 	}
 
 	/**
+	 * @before
 	 * @param string $path
 	 */
-	protected function resetWorkDir($path) {
-		$this->removeWorkDir($path);
-		$this->createWorkDir($path);
+	protected function resetWorkDir() {
+		$this->removeWorkDir($this->path);
+		$this->createWorkDir($this->path);
 	}
 
 	/**
@@ -64,7 +56,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 * @covers \Deploid\Application::deploidStructureValidate
 	 */
 	public function testDeploidStructureValidate() {
-		// Remove the following lines when you implement this test.
 		$this->markTestIncomplete(
 				'This test has not been implemented yet.'
 		);
@@ -90,6 +81,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$payload = $this->object->deploidStructureInit($this->path);
 
+		$structureScaned = $this->object->scanStructure($this->path);
+
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $sharedDir);
@@ -97,6 +90,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
+		$this->assertEquals($this->object->sortStructure($structure), $this->object->sortStructure($structureScaned));
 
 		return $payload;
 	}
@@ -106,7 +100,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testDeploidStructureClean() {
 		$releasesDir = 'releases';
-		$releaseName = date($this->object->getReleaseNameFormat());
 		$sharedDir = 'shared';
 		$needlessDir = 'needless';
 		$deploidFile = 'deploid.log';
@@ -115,34 +108,36 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$structureClean = [];
 		$structureClean['dirs'][] = $releasesDir;
-		$structureClean['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$structureClean['dirs'][] = $sharedDir;
 		$structureClean['files'][] = $deploidFile;
-		$structureClean['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$structureClean['links'][] = $currentLink . ':' . $releasesDir;
 		$this->object->setStructure($structureClean);
 
 		$structureDirty = [];
 		$structureDirty['dirs'][] = $releasesDir;
-		$structureDirty['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$structureDirty['dirs'][] = $sharedDir;
 		$structureDirty['dirs'][] = $needlessDir;
+		$structureDirty['dirs'][] = $needlessDir . DIRECTORY_SEPARATOR . 'testneed';
 		$structureDirty['files'][] = $deploidFile;
 		$structureDirty['files'][] = $needlessFile;
-		$structureDirty['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$structureDirty['files'][] = $needlessDir . DIRECTORY_SEPARATOR . 'testneed' . DIRECTORY_SEPARATOR . 'ase.txt';
+		$structureDirty['files'][] = $needlessDir . DIRECTORY_SEPARATOR . 'texts' . DIRECTORY_SEPARATOR . 'text.txt';
+		$structureDirty['links'][] = $currentLink . ':' . $releasesDir;
+		$structureDirty['links'][] = 'anotherdir/xlink' . ':' . 'dirxlink/xfolder';
+		$structureDirty['links'][] = 'another/folder/xlinkxx' . ':' . 'dirxlixnk/xfolderxx';
 		$this->object->makeStructure($this->path, $structureDirty);
 
 		$payload = $this->object->deploidStructureClean($this->path);
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
-		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $sharedDir);
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $needlessDir);
 		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
 		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $needlessFile);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
-		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
+		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
 
 		return $payload;
 	}
@@ -154,7 +149,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$releasesDir = 'releases';
 		$releaseNameExist = date($this->object->getReleaseNameFormat());
 		$releaseNameNotExist = date($this->object->getReleaseNameFormat(), time() + 3600);
-
 
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
@@ -335,10 +329,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 	/**
 	 * @covers \Deploid\Application::absolutePath
-	 * @todo   Implement testAbsolutePath().
 	 */
 	public function testAbsolutePath() {
-		// Remove the following lines when you implement this test.
 		$this->markTestIncomplete(
 				'This test has not been implemented yet.'
 		);
