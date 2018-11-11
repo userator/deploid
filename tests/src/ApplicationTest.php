@@ -23,19 +23,22 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	protected function setUp() {
 		$this->object = new Application;
 		$this->path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . strtolower(__NAMESPACE__);
+		$this->removeWorkDir($this->path);
+		$this->createWorkDir($this->path);
 	}
 
 	protected function tearDown() {
+		$this->removeWorkDir($this->path);
 		$this->object = null;
 		$this->path = null;
 	}
 
 	/**
-	 * @before
+	 * @param string $path
 	 */
-	protected function resetWorkDir() {
-		$this->removeWorkDir($this->path);
-		$this->createWorkDir($this->path);
+	protected function resetWorkDir($path) {
+		$this->removeWorkDir($path);
+		$this->createWorkDir($path);
 	}
 
 	/**
