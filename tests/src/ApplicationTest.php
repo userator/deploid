@@ -61,7 +61,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidStructureValidate
+	 * @covers \Deploid\Application::deploidStructureValidate
 	 */
 	public function testDeploidStructureValidate() {
 		// Remove the following lines when you implement this test.
@@ -71,7 +71,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidStructureInit
+	 * @covers \Deploid\Application::deploidStructureInit
 	 */
 	public function testDeploidStructureInit() {
 		$releasesDir = 'releases';
@@ -102,7 +102,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidStructureClean
+	 * @covers \Deploid\Application::deploidStructureClean
 	 */
 	public function testDeploidStructureClean() {
 		$releasesDir = 'releases';
@@ -149,19 +149,17 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseExist
+	 * @covers \Deploid\Application::deploidReleaseExist
 	 */
 	public function testDeploidReleaseExist() {
 		$releasesDir = 'releases';
 		$releaseNameExist = date($this->object->getReleaseNameFormat());
 		$releaseNameNotExist = date($this->object->getReleaseNameFormat(), time() + 3600);
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameExist,
-			],
-		];
+
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameExist;
 		$this->object->makeStructure($this->path, $structure);
 
 		$payloadSuccess = $this->object->deploidReleaseExist($releaseNameExist, $this->path);
@@ -175,17 +173,14 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseCreate
+	 * @covers \Deploid\Application::deploidReleaseCreate
 	 */
 	public function testDeploidReleaseCreate() {
 		$releasesDir = 'releases';
 		$releaseName = date($this->object->getReleaseNameFormat());
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-			],
-		];
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
 		$this->object->makeStructure($this->path, $structure);
 
 		$payload = $this->object->deploidReleaseCreate($releaseName, $this->path);
@@ -197,18 +192,15 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseRemove
+	 * @covers \Deploid\Application::deploidReleaseRemove
 	 */
 	public function testDeploidReleaseRemove() {
 		$releasesDir = 'releases';
 		$releaseName = date($this->object->getReleaseNameFormat());
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseName,
-			],
-		];
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$this->object->makeStructure($this->path, $structure);
 
 		$payload = $this->object->deploidReleaseRemove($releaseName, $this->path);
@@ -220,18 +212,15 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseList
+	 * @covers \Deploid\Application::deploidReleaseList
 	 */
 	public function testDeploidReleaseList() {
 		$releasesDir = 'releases';
 		$releaseName = date($this->object->getReleaseNameFormat());
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseName,
-			],
-		];
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$this->object->makeStructure($this->path, $structure);
 
 		$payload = $this->object->deploidReleaseList($this->path);
@@ -243,20 +232,17 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseLatest
+	 * @covers \Deploid\Application::deploidReleaseLatest
 	 */
 	public function testDeploidReleaseLatest() {
 		$releasesDir = 'releases';
 		$releaseNameFirst = date($this->object->getReleaseNameFormat());
 		$releaseNameLast = date($this->object->getReleaseNameFormat(), time() + 3600);
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast,
-			],
-		];
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast;
 		$this->object->makeStructure($this->path, $structure);
 
 		$payload = $this->object->deploidReleaseLatest($this->path);
@@ -268,22 +254,18 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseCurrent
+	 * @covers \Deploid\Application::deploidReleaseCurrent
 	 */
 	public function testDeploidReleaseCurrent() {
 		$releasesDir = 'releases';
 		$releaseName = date($this->object->getReleaseNameFormat());
 		$currentLink = 'current';
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseName,
-			],
-			'links' => [
-				$currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName,
-			]
-		];
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$structure['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+
 		$this->object->makeStructure($this->path, $structure);
 
 		$payload = $this->object->deploidReleaseCurrent($this->path);
@@ -299,7 +281,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseSetup
+	 * @covers \Deploid\Application::deploidReleaseSetup
 	 */
 	public function testDeploidReleaseSetup() {
 		$releasesDir = 'releases';
@@ -307,16 +289,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$releaseNameLast = date($this->object->getReleaseNameFormat(), time() + 3600);
 		$currentLink = 'current';
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast,
-			],
-			'links' => [
-				$currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
-			]
-		];
+
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast;
+		$structure['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
 		$this->object->makeStructure($this->path, $structure);
 
 		$payload = $this->object->deploidReleaseSetup($releaseNameLast, $this->path);
@@ -332,7 +310,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::deploidReleaseRotate
+	 * @covers \Deploid\Application::deploidReleaseRotate
 	 */
 	public function testDeploidReleaseRotate() {
 		$releasesDir = 'releases';
@@ -340,13 +318,10 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$releaseNameLast = date($this->object->getReleaseNameFormat(), time() + 3600);
 		$quantity = 1;
 
-		$structure = [
-			'dirs' => [
-				$releasesDir,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst,
-				$releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast,
-			],
-		];
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast;
 		$this->object->makeStructure($this->path, $structure);
 
 		$payload = $this->object->deploidReleaseRotate($quantity, $this->path);
@@ -360,7 +335,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::absolutePath
+	 * @covers \Deploid\Application::absolutePath
 	 * @todo   Implement testAbsolutePath().
 	 */
 	public function testAbsolutePath() {
@@ -371,7 +346,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @covers Deploid\Application::makeStructure
+	 * @covers \Deploid\Application::makeStructure
 	 */
 	public function testMakeStructure() {
 		$releasesDir = 'releases';
