@@ -12,6 +12,9 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	/** @var string */
 	private $releaseNameFormat = 'Y-m-d_H-i-s';
 
+	/** @var string */
+	private $chmod = '0775';
+
 	/** @var array */
 	private $structure = [
 		'dirs' => [
@@ -38,6 +41,14 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 	public function setReleaseNameFormat($releaseNameFormat) {
 		$this->releaseNameFormat = $releaseNameFormat;
+	}
+
+	public function getChmod() {
+		return $this->chmod;
+	}
+
+	public function setChmod($chmod) {
+		$this->chmod = $chmod;
 	}
 
 	/**
@@ -68,10 +79,12 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		if (empty($structure)) throw new \InvalidArgumentException('empty structure');
 
 		foreach ($structure as $section => $items) {
+			if (empty($items)) continue;
 			foreach ($items as $item) {
-				if ($section == 'dirs' && strlen($item)) mkdir($path . DIRECTORY_SEPARATOR . $item, 0777, true);
-				if ($section == 'files' && strlen($item)) touch($path . DIRECTORY_SEPARATOR . $item);
-				if ($section == 'links' && strlen($item)) symlink($path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]), $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]));
+				if (empty($item)) continue;
+				if ($section == 'dirs') mkdir($path . DIRECTORY_SEPARATOR . $item, $this->chmod, true);
+				if ($section == 'files') touch($path . DIRECTORY_SEPARATOR . $item);
+				if ($section == 'links') symlink($path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]), $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]));
 			}
 		}
 
@@ -137,7 +150,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$messages = [];
 
 		if (!is_dir($path)) {
-			if (mkdir($path, 0777, true)) {
+			if (mkdir($path, $this->chmod, true)) {
 				$messages[] = 'directory "' . realpath($path) . '" created';
 			} else {
 				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
@@ -147,39 +160,44 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			}
 		}
 
-		$releasesDir = $path . DIRECTORY_SEPARATOR . 'releases';
-		if (!is_dir($releasesDir)) {
-			if (mkdir($releasesDir, 0777, true)) {
-				$messages[] = 'directory "' . realpath($releasesDir) . '" created';
-			} else {
-				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-				$payload->setMessage('directory "' . $releasesDir . '" does not created');
-				$payload->setCode(255);
-				return $payload;
-			}
-		}
-
-		$sharedDir = $path . DIRECTORY_SEPARATOR . 'shared';
-		if (!is_dir($sharedDir)) {
-			if (mkdir($sharedDir, 0777, true)) {
-				$messages[] = 'directory "' . realpath($sharedDir) . '" created';
-			} else {
-				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-				$payload->setMessage('directory "' . $sharedDir . '" does not created');
-				$payload->setCode(255);
-				return $payload;
-			}
-		}
-
-		$logFile = $path . DIRECTORY_SEPARATOR . 'deploid.log';
-		if (!is_file($logFile)) {
-			if (touch($logFile)) {
-				$messages[] = 'file "' . realpath($logFile) . '" created';
-			} else {
-				$payload->setType(Payload::STRUCTURE_INIT_FAIL);
-				$payload->setMessage('file"' . $logFile . '" does not created');
-				$payload->setCode(255);
-				return $payload;
+		foreach ($structure as $section => $items) {
+			if (empty($items)) continue;
+			foreach ($items as $item) {
+				if (empty($item)) continue;
+				if ($section == 'dirs') {
+					$dir = $path . DIRECTORY_SEPARATOR . $item;
+					if (mkdir($dir, $this->chmod, true)) {
+						$messages[] = 'directory "' . realpath($dir) . '" created';
+					} else {
+						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+						$payload->setMessage('directory "' . $dir . '" does not created');
+						$payload->setCode(255);
+						return $payload;
+					}
+				}
+				if ($section == 'files') {
+					$file = $path . DIRECTORY_SEPARATOR . $item;
+					if (touch($file)) {
+						$messages[] = 'file "' . realpath($file) . '" created';
+					} else {
+						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+						$payload->setMessage('file"' . $file . '" does not created');
+						$payload->setCode(255);
+						return $payload;
+					}
+				}
+				if ($section == 'links') {
+					$target = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]);
+					$link = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]);
+					if (symlink($target, $link)) {
+						$messages[] = 'link "' . realpath($link) . '" created';
+					} else {
+						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
+						$payload->setMessage('link ' . $link . '" does not created');
+						$payload->setCode(255);
+						return $payload;
+					}
+				}
 			}
 		}
 
@@ -291,7 +309,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases' . DIRECTORY_SEPARATOR . $release;
 
-		if (!mkdir($releaseDir, 0777, true)) {
+		if (!mkdir($releaseDir, $this->chmod, true)) {
 			$payload->setType(Payload::RELEASE_CREATE_FAIL);
 			$payload->setMessage('release "' . $release . '" does not created');
 			$payload->setCode(255);
