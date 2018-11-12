@@ -10,14 +10,14 @@ class PayloadTest extends \PHPUnit_Framework_TestCase {
 	/**
 	 * @var Payload
 	 */
-	protected $object;
+	protected $payload;
 
 	/**
 	 * Sets up the fixture, for example, opens a network connection.
 	 * This method is called before a test is executed.
 	 */
 	protected function setUp() {
-		$this->object = new Payload;
+		$this->payload = new Payload();
 	}
 
 	/**
@@ -67,7 +67,7 @@ class PayloadTest extends \PHPUnit_Framework_TestCase {
 	public function testSetCode() {
 		$code = 100;
 
-		$payload = $this->object->setCode($code);
+		$payload = $this->payload->setCode($code);
 
 		$this->assertEquals($code, $payload->getCode());
 		$this->assertInstanceOf(Payload::class, $payload);
@@ -79,7 +79,7 @@ class PayloadTest extends \PHPUnit_Framework_TestCase {
 	public function testSetType() {
 		$type = 'success';
 
-		$payload = $this->object->setType($type);
+		$payload = $this->payload->setType($type);
 
 		$this->assertEquals($type, $payload->getType());
 		$this->assertInstanceOf(Payload::class, $payload);
@@ -91,7 +91,7 @@ class PayloadTest extends \PHPUnit_Framework_TestCase {
 	public function testSetMessage() {
 		$message = 'test message';
 
-		$payload = $this->object->setMessage($message);
+		$payload = $this->payload->setMessage($message);
 
 		$this->assertEquals($message, $payload->getMessage());
 		$this->assertInstanceOf(Payload::class, $payload);
@@ -105,7 +105,7 @@ class PayloadTest extends \PHPUnit_Framework_TestCase {
 		$code = 255;
 		$message = 'test message';
 
-		$payload = $this->object->create($type, $message, $code);
+		$payload = $this->payload->create($type, $message, $code);
 
 		$this->assertEquals($type, $payload->getType());
 		$this->assertEquals($message, $payload->getMessage());
@@ -123,7 +123,7 @@ class PayloadTest extends \PHPUnit_Framework_TestCase {
 			'code' => 255,
 		];
 
-		$payload = clone $this->object;
+		$payload = clone $this->payload;
 		$payload->setType($struct['type']);
 		$payload->setMessage($struct['message']);
 		$payload->setCode($struct['code']);
