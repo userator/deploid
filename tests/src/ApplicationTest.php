@@ -57,7 +57,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testDeploidStructureValidate() {
 		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
+			'This test has not been implemented yet.'
 		);
 	}
 
@@ -145,24 +145,36 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	/**
 	 * @covers \Deploid\Application::deploidReleaseExist
 	 */
-	public function testDeploidReleaseExist() {
+	public function testSuccessDeploidReleaseExist() {
 		$releasesDir = 'releases';
-		$releaseNameExist = date($this->object->getReleaseNameFormat());
-		$releaseNameNotExist = date($this->object->getReleaseNameFormat(), time() + 3600);
+		$releaseName = date($this->object->getReleaseNameFormat());
 
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
-		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameExist;
+		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$this->object->makeStructure($this->path, $structure);
 
-		$payloadSuccess = $this->object->deploidReleaseExist($releaseNameExist, $this->path);
-		$payloadFail = $this->object->deploidReleaseExist($releaseNameNotExist, $this->path);
+		$payload = $this->object->deploidReleaseExist($releaseName, $this->path);
 
-		$this->assertEquals(0, $payloadSuccess->getCode());
-		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameExist);
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
+	}
 
-		$this->assertNotEquals(0, $payloadFail->getCode());
-		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameNotExist);
+	/**
+	 * @covers \Deploid\Application::deploidReleaseExist
+	 */
+	public function testFailDeploidReleaseExist() {
+		$releasesDir = 'releases';
+		$releaseName = date($this->object->getReleaseNameFormat());
+
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$this->object->makeStructure($this->path, $structure);
+
+		$payload = $this->object->deploidReleaseExist($releaseName, $this->path);
+
+		$this->assertNotEquals(0, $payload->getCode());
+		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 	}
 
 	/**
@@ -332,7 +344,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testAbsolutePath() {
 		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
+			'This test has not been implemented yet.'
 		);
 	}
 
