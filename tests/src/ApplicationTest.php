@@ -364,10 +364,25 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	/**
 	 * @covers \Deploid\Application::absolutePath
 	 */
-	public function testAbsolutePath() {
-		$this->markTestIncomplete(
-				'This test has not been implemented yet.'
-		);
+	public function testImmutableAbsolutePath() {
+		$cwd = getcwd();
+		$absPath = $cwd . DIRECTORY_SEPARATOR . 'dirname';
+
+		$path = $this->application->absolutePath($absPath, $cwd);
+
+		$this->assertEquals($absPath, $path);
+	}
+
+	/**
+	 * @covers \Deploid\Application::absolutePath
+	 */
+	public function testMutableAbsolutePath() {
+		$cwd = getcwd();
+		$relPath = '.' . DIRECTORY_SEPARATOR . 'dirname';
+
+		$path = $this->application->absolutePath($relPath, $cwd);
+
+		$this->assertEquals($cwd . DIRECTORY_SEPARATOR . $relPath, $path);
 	}
 
 	/**
