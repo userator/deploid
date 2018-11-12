@@ -156,36 +156,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		return $structureDiff;
 	}
 
-	public function autocompleteStructure($path, array $structure) {
-		if (empty($path)) throw new \InvalidArgumentException('empty path');
-
-		if (empty($structure)) return [];
-
-		foreach ($structure as $section => $items) {
-			if ($section == 'dirs') continue;
-			if (empty($items)) continue;
-
-			foreach ($items as $item) {
-				if (empty($item)) continue;
-
-				if ($section == 'links') {
-					$structure['dirs'][] = dirname(explode(':', $item)[0]);
-				} else if ($section == 'files') {
-					$structure['dirs'][] = dirname($item);
-				}
-			}
-		}
-
-		foreach ($structure as $section => $items) {
-			$structure[$section] = array_unique($structure[$section]);
-			$structure[$section] = array_filter($structure[$section], function ($item) {
-				return !in_array($item, ['.', '..', './', '../']);
-			});
-		}
-
-		return $structure;
-	}
-
 	public function toRealpaths($path, array $structure) {
 		if (empty($path)) throw new \InvalidArgumentException('empty path');
 
@@ -206,7 +176,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 				}
 			}
 		}
-		
+
 		rsort($realpaths);
 
 		return $realpaths;
@@ -221,28 +191,36 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	public function deploidStructureValidate($path) {
 		$payload = new Payload();
 
+		if (!strlen($path)) {
+			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
 		$path = $this->absolutePath($path, getcwd());
+		$messages = [];
 
-		$releasesDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases';
-		if (!is_dir($releasesDir)) {
-			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('directory "' . $releasesDir . '" does not exist');
-			$payload->setCode(255);
-			return $payload;
+		foreach ($this->structure as $section => $items) {
+			if (empty($items)) continue;
+			foreach ($items as $item) {
+				if (empty($item)) continue;
+				if ($section == 'dirs') {
+					$dir = $path . DIRECTORY_SEPARATOR . $item;
+					if (!is_dir($dir)) $messages[] = 'directory "' . $dir . '" not found';
+				} else if ($section == 'files') {
+					$file = $path . DIRECTORY_SEPARATOR . $item;
+					if (!is_file($file)) $messages[] = 'file "' . $file . '" not found';
+				} else if ($section == 'links') {
+					$link = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]);
+					if (!is_link($link)) $messages[] = 'link "' . realpath($link) . '" not found';
+				}
+			}
 		}
 
-		$sharedDir = realpath($path) . DIRECTORY_SEPARATOR . 'shared';
-		if (!is_dir($sharedDir)) {
+		if (count($messages)) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('directory "' . $sharedDir . '" does not exist');
-			$payload->setCode(255);
-			return $payload;
-		}
-
-		$logFile = realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log';
-		if (!is_file($logFile)) {
-			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('file "' . $logFile . '" does not exist');
+			$payload->setMessage($messages);
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -288,30 +266,28 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 				if ($section == 'dirs') {
 					$dir = $path . DIRECTORY_SEPARATOR . $item;
 					if (mkdir($dir, $this->chmod, true)) {
-						$messages[] = 'directory "' . realpath($dir) . '" created';
+						$messages[] = 'directory "' . $dir . '" created';
 					} else {
 						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 						$payload->setMessage('directory "' . $dir . '" does not created');
 						$payload->setCode(255);
 						return $payload;
 					}
-				}
-				if ($section == 'files') {
+				} else if ($section == 'files') {
 					$file = $path . DIRECTORY_SEPARATOR . $item;
 					if (touch($file)) {
-						$messages[] = 'file "' . realpath($file) . '" created';
+						$messages[] = 'file "' . $file . '" created';
 					} else {
 						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 						$payload->setMessage('file"' . $file . '" does not created');
 						$payload->setCode(255);
 						return $payload;
 					}
-				}
-				if ($section == 'links') {
+				} else if ($section == 'links') {
 					$target = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]);
 					$link = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]);
 					if (symlink($target, $link)) {
-						$messages[] = 'link "' . realpath($link) . '" created';
+						$messages[] = 'link "' . $link . '" created';
 					} else {
 						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 						$payload->setMessage('link ' . $link . '" does not created');

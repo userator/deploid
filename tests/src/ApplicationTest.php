@@ -55,10 +55,51 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	/**
 	 * @covers \Deploid\Application::deploidStructureValidate
 	 */
-	public function testDeploidStructureValidate() {
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
+	public function testFailDeploidStructureValidate() {
+		$releasesDir = 'releases';
+		$deploidFile = 'deploid.log';
+		$currentLink = 'current';
+
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['files'][] = $deploidFile;
+		$structure['links'][] = $currentLink . ':' . $releasesDir;
+		$this->application->setStructure($structure);
+
+		$structureInvalid = [];
+		$this->application->makeStructure($this->path, $structureInvalid);
+
+		$payload = $this->application->deploidStructureValidate($this->path);
+
+		$this->assertEquals(255, $payload->getCode());
+		$this->assertEquals(count($structure), count($payload->getMessage()));
+		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
+		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFalse(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
+	}
+
+	/**
+	 * @covers \Deploid\Application::deploidStructureValidate
+	 */
+	public function testSuccessDeploidStructureValidate() {
+		$releasesDir = 'releases';
+		$deploidFile = 'deploid.log';
+		$currentLink = 'current';
+
+		$structure = [];
+		$structure['dirs'][] = $releasesDir;
+		$structure['files'][] = $deploidFile;
+		$structure['links'][] = $currentLink . ':' . $releasesDir;
+		$this->application->setStructure($structure);
+
+		$this->application->makeStructure($this->path, $structure);
+
+		$payload = $this->application->deploidStructureValidate($this->path);
+
+		$this->assertEquals(0, $payload->getCode());
+		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 	}
 
 	/**
@@ -83,6 +124,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$structureScaned = $this->application->scanStructure($this->path);
 
+		$this->assertEquals(0, $payload->getCode());
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $sharedDir);
@@ -91,8 +133,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
 		$this->assertEquals($this->application->sortStructure($structure), $this->application->sortStructure($structureScaned));
-
-		return $payload;
 	}
 
 	/**
@@ -136,8 +176,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
-
-		return $payload;
 	}
 
 	/**
@@ -190,8 +228,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
-
-		return $payload;
 	}
 
 	/**
@@ -210,8 +246,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
-
-		return $payload;
 	}
 
 	/**
@@ -230,8 +264,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertEquals([$releaseName], $payload->getMessage());
-
-		return $payload;
 	}
 
 	/**
@@ -252,8 +284,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertEquals($releaseNameLast, $payload->getMessage());
-
-		return $payload;
 	}
 
 	/**
@@ -279,8 +309,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
-
-		return $payload;
 	}
 
 	/**
@@ -308,8 +336,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
-
-		return $payload;
 	}
 
 	/**
@@ -333,8 +359,6 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast);
 		$this->assertCount($quantity, glob($this->path . DIRECTORY_SEPARATOR . $releasesDir));
-
-		return $payload;
 	}
 
 	/**
@@ -342,7 +366,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testAbsolutePath() {
 		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
+				'This test has not been implemented yet.'
 		);
 	}
 
