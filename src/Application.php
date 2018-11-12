@@ -13,7 +13,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	private $releaseNameFormat = 'Y-m-d_H-i-s';
 
 	/** @var string */
-	private $chmod = '0777';
+	private $chmod = 0777;
 
 	/** @var array */
 	private $structure = [
@@ -76,19 +76,110 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 	public function makeStructure($path, array $structure) {
 		if (empty($path)) throw new \InvalidArgumentException('empty path');
-		if (empty($structure)) throw new \InvalidArgumentException('empty structure');
+
+		if (empty($structure)) true;
 
 		foreach ($structure as $section => $items) {
 			if (empty($items)) continue;
 			foreach ($items as $item) {
 				if (empty($item)) continue;
-				if ($section == 'dirs') mkdir($path . DIRECTORY_SEPARATOR . $item, $this->chmod, true);
-				if ($section == 'files') touch($path . DIRECTORY_SEPARATOR . $item);
-				if ($section == 'links') symlink($path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]), $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]));
+				if ($section == 'dirs') {
+					$dir = $path . DIRECTORY_SEPARATOR . $item;
+					mkdir($dir, $this->chmod, true);
+				} else if ($section == 'files') {
+					$file = $path . DIRECTORY_SEPARATOR . $item;
+					if (!is_dir(dirname($file))) mkdir(dirname($file), $this->chmod, true);
+					touch($path . DIRECTORY_SEPARATOR . $item);
+				} else if ($section == 'links') {
+					$link = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]);
+					$target = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]);
+					if (!is_dir(dirname($link))) mkdir(dirname($link), $this->chmod, true);
+					symlink($target, $link);
+				}
 			}
 		}
 
 		return true;
+	}
+
+	public function scanStructure($path) {
+		if (empty($path)) throw new \InvalidArgumentException('empty path');
+
+		$directory = new \RecursiveDirectoryIterator(realpath($path), \FilesystemIterator::CURRENT_AS_PATHNAME | \FilesystemIterator::SKIP_DOTS);
+		$iterator = new \RecursiveIteratorIterator($directory, \RecursiveIteratorIterator::SELF_FIRST);
+
+		$items = [];
+		foreach ($iterator as $item) {
+			$items[] = $item;
+		}
+
+		if (empty($items)) return [];
+
+		$structure = [];
+		foreach ($items as $item) {
+			if (is_link($item)) {
+				$structure['links'][] = str_ireplace(realpath($path) . DIRECTORY_SEPARATOR, '', $item) . ':' . str_ireplace(realpath($path) . DIRECTORY_SEPARATOR, '', readlink($item));
+			} else if (is_file($item)) {
+				$structure['files'][] = str_ireplace(realpath($path) . DIRECTORY_SEPARATOR, '', $item);
+			} else if (is_dir($item)) {
+				$structure['dirs'][] = str_ireplace(realpath($path) . DIRECTORY_SEPARATOR, '', $item);
+			}
+		}
+
+		return $structure;
+	}
+
+	public function sortStructure(array $structure) {
+		ksort($structure);
+
+		$structure = array_map(function ($item) {
+			sort($item);
+			return $item;
+		}, $structure);
+
+		return $structure;
+	}
+
+	public function diffStructure(array $structureThin, array $structureFat) {
+		if (empty($structureThin)) return [];
+		if (empty($structureFat)) return [];
+
+		$structureDiff = [];
+
+		foreach ($structureFat as $section => $items) {
+			if (empty($structureThin[$section])) continue;
+			$diff = array_diff($items, $structureThin[$section]);
+			if (empty($diff)) continue;
+			$structureDiff[$section] = $diff;
+		}
+
+		return $structureDiff;
+	}
+
+	public function toRealpaths($path, array $structure) {
+		if (empty($path)) throw new \InvalidArgumentException('empty path');
+
+		if (empty($structure)) return [];
+
+		$realpaths = [];
+
+		foreach ($structure as $section => $items) {
+			if (empty($items)) continue;
+			foreach ($items as $item) {
+				if (empty($item)) continue;
+				if ($section == 'links') {
+					$realpaths[] = realpath($path) . DIRECTORY_SEPARATOR . explode(':', $item)[0];
+				} else if ($section == 'files') {
+					$realpaths[] = realpath($path) . DIRECTORY_SEPARATOR . $item;
+				} else if ($section == 'dirs') {
+					$realpaths[] = realpath($path) . DIRECTORY_SEPARATOR . $item;
+				}
+			}
+		}
+
+		rsort($realpaths);
+
+		return $realpaths;
 	}
 
 	/* tools */
@@ -100,28 +191,36 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	public function deploidStructureValidate($path) {
 		$payload = new Payload();
 
+		if (!strlen($path)) {
+			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
+			$payload->setMessage('empty path');
+			$payload->setCode(255);
+			return $payload;
+		}
+
 		$path = $this->absolutePath($path, getcwd());
+		$messages = [];
 
-		$releasesDir = realpath($path) . DIRECTORY_SEPARATOR . 'releases';
-		if (!is_dir($releasesDir)) {
-			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('directory "' . $releasesDir . '" does not exist');
-			$payload->setCode(255);
-			return $payload;
+		foreach ($this->structure as $section => $items) {
+			if (empty($items)) continue;
+			foreach ($items as $item) {
+				if (empty($item)) continue;
+				if ($section == 'dirs') {
+					$dir = $path . DIRECTORY_SEPARATOR . $item;
+					if (!is_dir($dir)) $messages[] = 'directory "' . $dir . '" not found';
+				} else if ($section == 'files') {
+					$file = $path . DIRECTORY_SEPARATOR . $item;
+					if (!is_file($file)) $messages[] = 'file "' . $file . '" not found';
+				} else if ($section == 'links') {
+					$link = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]);
+					if (!is_link($link)) $messages[] = 'link "' . realpath($link) . '" not found';
+				}
+			}
 		}
 
-		$sharedDir = realpath($path) . DIRECTORY_SEPARATOR . 'shared';
-		if (!is_dir($sharedDir)) {
+		if (count($messages)) {
 			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('directory "' . $sharedDir . '" does not exist');
-			$payload->setCode(255);
-			return $payload;
-		}
-
-		$logFile = realpath($path) . DIRECTORY_SEPARATOR . 'deploid.log';
-		if (!is_file($logFile)) {
-			$payload->setType(Payload::STRUCTURE_VALIDATE_FAIL);
-			$payload->setMessage('file "' . $logFile . '" does not exist');
+			$payload->setMessage($messages);
 			$payload->setCode(255);
 			return $payload;
 		}
@@ -167,30 +266,28 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 				if ($section == 'dirs') {
 					$dir = $path . DIRECTORY_SEPARATOR . $item;
 					if (mkdir($dir, $this->chmod, true)) {
-						$messages[] = 'directory "' . realpath($dir) . '" created';
+						$messages[] = 'directory "' . $dir . '" created';
 					} else {
 						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 						$payload->setMessage('directory "' . $dir . '" does not created');
 						$payload->setCode(255);
 						return $payload;
 					}
-				}
-				if ($section == 'files') {
+				} else if ($section == 'files') {
 					$file = $path . DIRECTORY_SEPARATOR . $item;
 					if (touch($file)) {
-						$messages[] = 'file "' . realpath($file) . '" created';
+						$messages[] = 'file "' . $file . '" created';
 					} else {
 						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 						$payload->setMessage('file"' . $file . '" does not created');
 						$payload->setCode(255);
 						return $payload;
 					}
-				}
-				if ($section == 'links') {
+				} else if ($section == 'links') {
 					$target = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]);
 					$link = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]);
 					if (symlink($target, $link)) {
-						$messages[] = 'link "' . realpath($link) . '" created';
+						$messages[] = 'link "' . $link . '" created';
 					} else {
 						$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 						$payload->setMessage('link ' . $link . '" does not created');
@@ -221,26 +318,19 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$path = $this->absolutePath($path, getcwd());
+		$realpathsClean = $this->toRealpaths($path, $this->structure);
+		$realpathsDirty = $this->toRealpaths($path, $this->scanStructure($path));
+		$realpathsDiff = array_diff($realpathsDirty, $realpathsClean);
 
-		$paths = glob(realpath($path) . DIRECTORY_SEPARATOR . '*');
-
-		$paths = array_filter($paths, function ($path) {
-			return !in_array(basename($path), $this->structure['dirs'] + $this->structure['links'] + $this->structure['files']);
-		});
-
-		foreach ($paths as $pathname) {
-			if (is_file($pathname)) {
-				unlink($pathname);
-			} else if (is_link($pathname)) {
-				unlink($pathname);
-			} else if (is_dir($pathname)) {
-				rmdir($pathname);
-			}
+		foreach ($realpathsDiff as $item) {
+			if (empty($item)) continue;
+			if (is_link($item)) unlink($item);
+			if (is_file($item)) unlink($item);
+			if (is_dir($item)) rmdir($item);
 		}
 
 		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
-		$payload->setMessage(array_merge(['cleaned items:'], $paths));
+		$payload->setMessage(array_merge(['cleaned items:'], $realpathsDiff));
 		$payload->setCode(0);
 		return $payload;
 	}
