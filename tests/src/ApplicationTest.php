@@ -105,6 +105,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$deploidFile = 'deploid.log';
 		$needlessFile = 'needless.log';
 		$currentLink = 'current';
+		$needlessLink = 'needlesslink';
 
 		$structureClean = [];
 		$structureClean['dirs'][] = $releasesDir;
@@ -117,14 +118,10 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structureDirty['dirs'][] = $releasesDir;
 		$structureDirty['dirs'][] = $sharedDir;
 		$structureDirty['dirs'][] = $needlessDir;
-		$structureDirty['dirs'][] = $needlessDir . DIRECTORY_SEPARATOR . 'testneed';
 		$structureDirty['files'][] = $deploidFile;
 		$structureDirty['files'][] = $needlessFile;
-		$structureDirty['files'][] = $needlessDir . DIRECTORY_SEPARATOR . 'testneed' . DIRECTORY_SEPARATOR . 'ase.txt';
-		$structureDirty['files'][] = $needlessDir . DIRECTORY_SEPARATOR . 'texts' . DIRECTORY_SEPARATOR . 'text.txt';
 		$structureDirty['links'][] = $currentLink . ':' . $releasesDir;
-		$structureDirty['links'][] = 'anotherdir/xlink' . ':' . 'dirxlink/xfolder';
-		$structureDirty['links'][] = 'another/folder/xlinkxx' . ':' . 'dirxlixnk/xfolderxx';
+		$structureDirty['links'][] = $needlessLink . ':' . $needlessDir;
 		$this->object->makeStructure($this->path, $structureDirty);
 
 		$payload = $this->object->deploidStructureClean($this->path);
@@ -135,6 +132,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $needlessDir);
 		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
 		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $needlessFile);
+		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $needlessLink);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
