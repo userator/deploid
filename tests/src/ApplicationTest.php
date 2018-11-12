@@ -71,7 +71,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$payload = $this->application->deploidStructureValidate($this->path);
 
-		$this->assertEquals(255, $payload->getCode());
+		$this->assertNotEquals(0, $payload->getCode());
 		$this->assertEquals(count($structure), count($payload->getMessage()));
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
 		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
