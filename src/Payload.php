@@ -57,19 +57,15 @@ class Payload {
 	}
 
 	public function setCode($code) {
-		if (!\is_numeric($code)) throw new \InvalidArgumentException('expected numeric');
 		$this->code = $code;
-		return $this;
 	}
 
 	public function setType($type) {
 		$this->type = $type;
-		return $this;
 	}
 
 	public function setMessage($message) {
 		$this->message = $message;
-		return $this;
 	}
 
 	/* tools */
