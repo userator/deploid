@@ -28,7 +28,7 @@ script:
   - /usr/local/bin/phpunit --coverage-clover=coverage.clover
   - /usr/local/bin/ocular code-coverage:upload --format=php-clover coverage.clover
 before_deploy:
-  - /usr/bin/php -d phar.readonly=0 build/make-phar.php
+  - php -d phar.readonly=0 build/make-phar.php
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
