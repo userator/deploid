@@ -35,6 +35,5 @@ deploy:
   file: build/deploid.phar
   skip_cleanup: true
   on:
-    tags: true
     repo: userator/deploid
     php:  '5.6'
