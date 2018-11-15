@@ -91,6 +91,13 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 	/* tools */
 
+	public function parseConfig($config) {
+		if (isset($config['releaseNameForma'])) $this->releaseNameFormat = $config['releaseNameForma'];
+		if (isset($config['chmod'])) $this->chmod = $config['chmod'];
+		if (isset($config['structure'])) $this->structure = $config['structure'];
+		if (isset($config['mapping'])) $this->mapping = $config['mapping'];
+	}
+
 	public function makeStructure($path, array $structure) {
 		if (empty($path)) throw new \InvalidArgumentException('empty path');
 
