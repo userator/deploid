@@ -180,30 +180,30 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		return $structureDiff;
 	}
 
-	public function toRealpaths($path, array $structure) {
+	public function flatPaths($path, array $structure) {
 		if (empty($path)) throw new \InvalidArgumentException('empty path');
 
 		if (empty($structure)) return [];
 
-		$realpaths = [];
+		$flatpaths = [];
 
 		foreach ($structure as $section => $items) {
 			if (empty($items)) continue;
 			foreach ($items as $item) {
 				if (empty($item)) continue;
 				if ($section == 'links') {
-					$realpaths[] = realpath($path) . DIRECTORY_SEPARATOR . explode(':', $item)[0];
+					$flatpaths[] = realpath($path) . DIRECTORY_SEPARATOR . explode(':', $item)[0];
 				} else if ($section == 'files') {
-					$realpaths[] = realpath($path) . DIRECTORY_SEPARATOR . $item;
+					$flatpaths[] = realpath($path) . DIRECTORY_SEPARATOR . $item;
 				} else if ($section == 'dirs') {
-					$realpaths[] = realpath($path) . DIRECTORY_SEPARATOR . $item;
+					$flatpaths[] = realpath($path) . DIRECTORY_SEPARATOR . $item;
 				}
 			}
 		}
 
-		rsort($realpaths);
+		rsort($flatpaths);
 
-		return $realpaths;
+		return $flatpaths;
 	}
 
 	public function absolutePath($path, $cwd) {
@@ -348,11 +348,11 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$realpathsClean = $this->toRealpaths($path, $this->structure);
-		$realpathsDirty = $this->toRealpaths($path, $this->scanStructure($path));
-		$realpathsDiff = array_diff($realpathsDirty, $realpathsClean);
+		$pathsClean = $this->flatPaths($path, $this->structure);
+		$pathsDirty = $this->flatPaths($path, $this->scanStructure($path));
+		$pathsDiff = array_diff($pathsDirty, $pathsClean);
 
-		foreach ($realpathsDiff as $item) {
+		foreach ($pathsDiff as $item) {
 			if (empty($item)) continue;
 			if (is_link($item)) unlink($item);
 			if (is_file($item)) unlink($item);
@@ -360,7 +360,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		}
 
 		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
-		$payload->setMessage(array_merge(['cleaned items:'], $realpathsDiff));
+		$payload->setMessage(array_merge(['cleaned items:'], $pathsDiff));
 		$payload->setCode(0);
 		return $payload;
 	}
