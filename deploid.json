@@ -1,0 +1,23 @@
+{
+	"name": "deploid",
+	"release-name-format": "Y-m-d_H-i-s",
+	"chmod": "0777",
+	"structure": {
+		"dirs": [
+			"releases",
+			"releases/first",
+			"shared"
+		],
+		"files": [
+			"deploid.log"
+		],
+		"links": [
+			"current:releases/first"
+		]
+	},
+	"mapping": {
+		"releases-dir": "releases",
+		"log-file": "deploid.log",
+		"current-link": "current"
+	}
+}
