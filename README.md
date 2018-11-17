@@ -28,4 +28,18 @@ $ git clone https://github.com/userator/deploid.git
 $ wget https://github.com/userator/deploid/archive/1.0.0.tar.gz
 ```
 
+## Make PHAR personally
+
+Run script:
+
+```bash
+php -d phar.readonly=0 ./build/make-phar.php
+```
+
+Archive will be maked in the same directory:
+
+```bash
+./build/deploid.phar
+```
+
 Deploid requires PHP 5.6.0 or newer.
