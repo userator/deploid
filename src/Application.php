@@ -10,92 +10,230 @@ use Symfony\Component\Process\Process;
 class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 	/** @var string */
-	private $releaseNameFormat = 'Y-m-d_H-i-s';
+	private $name = 'deploid-app';
 
 	/** @var string */
+	private $releaseNameFormat = 'Y-m-d_H-i-s';
+
+	/** @var int */
 	private $chmod = 0777;
 
 	/** @var array */
-	private $structure = [
-		'dirs' => [
-			'releases',
-			'releases/first',
-			'shared',
+	private $structure = [];
+
+	/** @var array */
+	private $mapping = [];
+
+	/** @var array */
+	private $configInternal = [
+		'structure' => [
+			'dirs' => [],
+			'files' => [
+				'deploid.json',
+			],
+			'links' => [],
 		],
-		'files' => [
-			'deploid.log',
-		],
-		'links' => [
-			'current:releases/first',
+		'mapping' => [
+			'config-file' => 'deploid.json',
 		],
 	];
 
 	/** @var array */
-	private $mapping = [
-		'releases-dir' => 'releases',
-		'log-file' => 'deploid.log',
-		'current-link' => 'current',
+	private $configExternal = [];
+
+	/** @var array */
+	private $configDefault = [
+		'name' => 'deploid-app',
+		'release-name-format' => 'Y-m-d_H-i-s',
+		'chmod' => '0777',
+		'structure' => [
+			'dirs' => [
+				'releases',
+				'releases/2018-10-16_07-36-05',
+				'shared',
+			],
+			'files' => [
+				'deploid.log',
+			],
+			'links' => [
+				'current:releases/2018-10-16_07-36-05',
+			],
+		],
+		'mapping' => [
+			'releases-dir' => 'releases',
+			'log-file' => 'deploid.log',
+			'current-link' => 'current',
+		],
 	];
+
+	/** @var array */
+	private $config = [];
 
 	/** @var LoggerInterface */
 	private $logger;
 
 	/* mutators */
 
-	public function getReleaseNameFormat() {
-		return $this->releaseNameFormat;
+	public function getName() {
+		return $this->name;
 	}
 
-	public function setReleaseNameFormat($releaseNameFormat) {
-		$this->releaseNameFormat = $releaseNameFormat;
+	public function getReleaseNameFormat() {
+		return $this->releaseNameFormat;
 	}
 
 	public function getChmod() {
 		return $this->chmod;
 	}
 
-	public function setChmod($chmod) {
-		$this->chmod = $chmod;
-	}
-
-	/**
-	 * @return LoggerInterface
-	 */
-	public function getLogger() {
-		return $this->logger;
-	}
-
-	/**
-	 * @param LoggerInterface $logger
-	 * @return void
-	 */
-	public function setLogger(LoggerInterface $logger) {
-		$this->logger = $logger;
-	}
-
 	public function getStructure() {
 		return $this->structure;
-	}
-
-	public function setStructure(array $structure) {
-		$this->structure = $structure;
 	}
 
 	public function getMapping() {
 		return $this->mapping;
 	}
 
-	public function setMapping($mapping) {
+	public function getConfigInternal() {
+		return $this->configInternal;
+	}
+
+	public function getConfigExternal() {
+		return $this->configExternal;
+	}
+
+	public function getConfigDefault() {
+		return $this->configDefault;
+	}
+
+	public function getConfig() {
+		return $this->config;
+	}
+
+	public function getConfigMaker() {
+		return $this->configMaker;
+	}
+
+	public function getLogger() {
+		return $this->logger;
+	}
+
+	public function setName($name) {
+		$this->name = $name;
+	}
+
+	public function setReleaseNameFormat($releaseNameFormat) {
+		$this->releaseNameFormat = $releaseNameFormat;
+	}
+
+	public function setChmod($chmod) {
+		$this->chmod = $chmod;
+	}
+
+	public function setStructure(array $structure) {
+		$this->structure = $structure;
+	}
+
+	public function setMapping(array $mapping) {
 		$this->mapping = $mapping;
+	}
+
+	public function setConfigInternal(array $configInternal) {
+		$this->configInternal = $configInternal;
+	}
+
+	public function setConfigExternal(array $configExternal) {
+		$this->configExternal = $configExternal;
+	}
+
+	public function setConfigDefault(array $configDefault) {
+		$this->configDefault = $configDefault;
+	}
+
+	public function setConfig(array $config) {
+		$this->config = $config;
+	}
+
+	public function setConfigMaker(ConfigMaker $configMaker) {
+		$this->configMaker = $configMaker;
+	}
+
+	public function setLogger(LoggerInterface $logger) {
+		$this->logger = $logger;
 	}
 
 	/* tools */
 
-	public function parseConfig($config) {
-		if (isset($config['release-name-format'])) $this->releaseNameFormat = $config['release-name-format'];
-		if (isset($config['chmod'])) $this->chmod = $config['chmod'];
-		if (isset($config['structure'])) $this->structure = $config['structure'];
-		if (isset($config['mapping'])) $this->mapping = $config['mapping'];
+	static public function readConfigFile($file) {
+		if (empty($file)) throw new \InvalidArgumentException('empty "file" agrument');
+		if (!is_file($file)) throw new \InvalidArgumentException('file "' . $file . '" not found');
+
+		$json = file_get_contents($file);
+		if (false === $json) throw new \RuntimeException('unble to read file "' . $file . '"');
+
+		$config = json_decode($json, true);
+		if (null === $config) throw new \RuntimeException('unble to decode json');
+
+		return $config;
+	}
+
+	static public function writeConfigFile($file, array $config) {
+		if (empty($file)) throw new \InvalidArgumentException('empty "file" agrument');
+		if (!is_file($file)) throw new \InvalidArgumentException('file "' . $file . '" not found');
+
+		$json = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+		if (false === $json) throw new \RuntimeException('unable to encode json');
+
+		$write = file_put_contents($file, $json);
+		if (false === $write) throw new \RuntimeException('unble to write file "' . $file . '"');
+
+		return true;
+	}
+
+	public function calcConfig(array $external, array $internal) {
+		return array_merge_recursive($external, $internal);
+	}
+
+	public function init(array $config) {
+		$this->name = $config['name'];
+		$this->releaseNameFormat = $config['release-name-format'];
+		$this->chmod = intval($config['chmod'], 8);
+		$this->structure = $config['structure'];
+		$this->mapping = $config['mapping'];
+		$this->config = $config;
+		return $this;
+	}
+
+	public function calcConfigExternal($config, $configInternal) {
+		$dirs = array_diff($config['structure']['dirs'], $configInternal['structure']['dirs']);
+		if (count($dirs)) $config['structure']['dirs'] = array_values($dirs);
+
+		$files = array_diff($config['structure']['files'], $configInternal['structure']['files']);
+		if (count($files)) $config['structure']['files'] = array_values($files);
+
+		$links = array_diff($config['structure']['links'], $configInternal['structure']['links']);
+		if (count($links)) $config['structure']['links'] = array_values($links);
+
+		$maping = array_diff_assoc($config['mapping'], $configInternal['mapping']);
+		if (count($maping)) $config['mapping'] = $maping;
+
+		return $config;
+	}
+
+	public function isEmptyConfigFile($file) {
+		if (empty($file)) throw new \InvalidArgumentException('empty "file" agrument');
+		if (!is_file($file)) throw new \InvalidArgumentException('file "' . $file . '" not found');
+
+		$json = file_get_contents($file);
+		if (false === $json) throw new \RuntimeException('unble to read file "' . $file . '"');
+
+		return empty($json);
+	}
+
+	public function prepareConfig(array $config) {
+		$config['structure'] = $this->sortStructure($config['structure']);
+		$config['structure'] = $this->uniqStructure($config['structure']);
+		return $config;
 	}
 
 	public function makeStructure($path, array $structure) {
@@ -159,6 +297,14 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$structure = array_map(function ($item) {
 			sort($item);
 			return $item;
+		}, $structure);
+
+		return $structure;
+	}
+
+	public function uniqStructure(array $structure) {
+		$structure = array_map(function ($item) {
+			return array_unique($item);
 		}, $structure);
 
 		return $structure;
@@ -298,14 +444,18 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 				if (empty($item)) continue;
 				if ($section == 'dirs') {
 					$dir = $path . DIRECTORY_SEPARATOR . $item;
-					if (mkdir($dir, $this->chmod, true)) {
+					if (is_dir($dir)) {
+						$messagesSuccess[] = 'directory "' . $dir . '" already exist';
+					} else if (mkdir($dir, $this->chmod, true)) {
 						$messagesSuccess[] = 'directory "' . $dir . '" created';
 					} else {
 						$messagesFail[] = 'directory "' . $dir . '" does not created';
 					}
 				} else if ($section == 'files') {
 					$file = $path . DIRECTORY_SEPARATOR . $item;
-					if (touch($file)) {
+					if (is_file($file)) {
+						$messagesSuccess[] = 'file "' . $file . '" already exist';
+					} else if (touch($file)) {
 						$messagesSuccess[] = 'file "' . $file . '" created';
 					} else {
 						$messagesFail[] = 'file"' . $file . '" does not created';
@@ -313,12 +463,25 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 				} else if ($section == 'links') {
 					$target = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[1]);
 					$link = $path . DIRECTORY_SEPARATOR . (explode(':', $item)[0]);
-					if (symlink($target, $link)) {
+					if (is_link($link)) {
+						$messagesSuccess[] = 'link "' . $link . '" already exist';
+					} else if (symlink($target, $link)) {
 						$messagesSuccess[] = 'link "' . $link . '" created';
 					} else {
 						$messagesFail[] = 'link ' . $link . '" does not created';
 					}
 				}
+			}
+		}
+
+		$configFile = $path . DIRECTORY_SEPARATOR . $this->mapping['config-file'];
+		if ($this->isEmptyConfigFile($configFile)) {
+			try {
+				$config = $this->calcConfigExternal($this->config, $this->configInternal);
+				$this->writeConfigFile($configFile, $config);
+				$messagesSuccess[] = 'config file "' . $configFile . '" are wrote';
+			} catch (\Exception $e) {
+				$messagesFail[] = $e->getMessage();
 			}
 		}
 

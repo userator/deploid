@@ -54,12 +54,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testFailDeploidStructureValidate() {
 		$releasesDir = 'releases';
-		$deploidFile = 'deploid.log';
+		$logFile = 'deploid.log';
 		$currentLink = 'current';
 
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
-		$structure['files'][] = $deploidFile;
+		$structure['files'][] = $logFile;
 		$structure['links'][] = $currentLink . ':' . $releasesDir;
 		$this->application->setStructure($structure);
 
@@ -71,7 +71,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertNotEquals(0, $payload->getCode());
 		$this->assertEquals(count($structure), count($payload->getMessage()));
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
-		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $logFile);
 		$this->assertFalse(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 	}
 
@@ -80,12 +80,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testSuccessDeploidStructureValidate() {
 		$releasesDir = 'releases';
-		$deploidFile = 'deploid.log';
+		$logFile = 'deploid.log';
 		$currentLink = 'current';
 
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
-		$structure['files'][] = $deploidFile;
+		$structure['files'][] = $logFile;
 		$structure['links'][] = $currentLink . ':' . $releasesDir;
 		$this->application->setStructure($structure);
 
@@ -95,7 +95,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $logFile);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 	}
 
@@ -106,16 +106,25 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$releasesDir = 'releases';
 		$releaseName = date($this->application->getReleaseNameFormat());
 		$sharedDir = 'shared';
-		$deploidFile = 'deploid.log';
+		$logFile = 'deploid.log';
+		$configFile = 'deploid.json';
 		$currentLink = 'current';
 
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$structure['dirs'][] = $sharedDir;
-		$structure['files'][] = $deploidFile;
+		$structure['files'][] = $logFile;
+		$structure['files'][] = $configFile;
 		$structure['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$mapping['log-file'] = $logFile;
+		$mapping['config-file'] = $configFile;
+		$mapping['current-link'] = $currentLink;
+		$this->application->setMapping($mapping);
 
 		$payload = $this->application->deploidStructureInit($this->path);
 
@@ -125,7 +134,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $sharedDir);
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $logFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $configFile);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
@@ -139,7 +149,8 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$releasesDir = 'releases';
 		$sharedDir = 'shared';
 		$needlessDir = 'needless';
-		$deploidFile = 'deploid.log';
+		$logFile = 'deploid.log';
+		$configFile = 'deploid.json';
 		$needlessFile = 'needless.log';
 		$currentLink = 'current';
 		$needlessLink = 'needlesslink';
@@ -147,15 +158,24 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structureClean = [];
 		$structureClean['dirs'][] = $releasesDir;
 		$structureClean['dirs'][] = $sharedDir;
-		$structureClean['files'][] = $deploidFile;
+		$structureClean['files'][] = $logFile;
+		$structureClean['files'][] = $configFile;
 		$structureClean['links'][] = $currentLink . ':' . $releasesDir;
 		$this->application->setStructure($structureClean);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$mapping['log-file'] = $logFile;
+		$mapping['current-link'] = $currentLink;
+		$mapping['config-file'] = $configFile;
+		$this->application->setMapping($mapping);
 
 		$structureDirty = [];
 		$structureDirty['dirs'][] = $releasesDir;
 		$structureDirty['dirs'][] = $sharedDir;
 		$structureDirty['dirs'][] = $needlessDir;
-		$structureDirty['files'][] = $deploidFile;
+		$structureDirty['files'][] = $logFile;
+		$structureDirty['files'][] = $configFile;
 		$structureDirty['files'][] = $needlessFile;
 		$structureDirty['links'][] = $currentLink . ':' . $releasesDir;
 		$structureDirty['links'][] = $needlessLink . ':' . $needlessDir;
@@ -163,16 +183,20 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$payload = $this->application->deploidStructureClean($this->path);
 
+		$structureScaned = $this->application->scanStructure($this->path);
+
 		$this->assertEquals(0, $payload->getCode());
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $sharedDir);
 		$this->assertDirectoryNotExists($this->path . DIRECTORY_SEPARATOR . $needlessDir);
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $logFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $configFile);
 		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $needlessFile);
 		$this->assertFileNotExists($this->path . DIRECTORY_SEPARATOR . $needlessLink);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
+		$this->assertEquals($this->application->sortStructure($structureClean), $this->application->sortStructure($structureScaned));
 	}
 
 	/**
@@ -185,6 +209,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseExist($releaseName, $this->path);
@@ -202,6 +232,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseExist($releaseName, $this->path);
@@ -219,6 +255,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseCreate($releaseName, $this->path);
@@ -237,6 +279,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseRemove($releaseName, $this->path);
@@ -255,6 +303,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure = [];
 		$structure['dirs'][] = $releasesDir;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseList($this->path);
@@ -275,6 +329,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure['dirs'][] = $releasesDir;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseLatest($this->path);
@@ -295,6 +355,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure['dirs'][] = $releasesDir;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$structure['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$mapping['current-link'] = $currentLink;
+		$this->application->setMapping($mapping);
 
 		$this->application->makeStructure($this->path, $structure);
 
@@ -323,6 +389,13 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast;
 		$structure['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$mapping['current-link'] = $currentLink;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseSetup($releaseNameLast, $this->path);
@@ -348,6 +421,12 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure['dirs'][] = $releasesDir;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameFirst;
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseNameLast;
+		$this->application->setStructure($structure);
+
+		$mapping = [];
+		$mapping['releases-dir'] = $releasesDir;
+		$this->application->setMapping($mapping);
+
 		$this->application->makeStructure($this->path, $structure);
 
 		$payload = $this->application->deploidReleaseRotate($quantity, $this->path);
@@ -390,7 +469,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$releaseName = date($this->application->getReleaseNameFormat());
 		$logsDir = 'logs';
 		$historyFile = 'history.txt';
-		$deploidFile = 'deploid.log';
+		$logFile = 'deploid.log';
 		$currentLink = 'current';
 
 		$structure = [];
@@ -398,7 +477,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$structure['dirs'][] = $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 		$structure['dirs'][] = $logsDir;
 		$structure['files'][] = $historyFile;
-		$structure['files'][] = $logsDir . DIRECTORY_SEPARATOR . $deploidFile;
+		$structure['files'][] = $logsDir . DIRECTORY_SEPARATOR . $logFile;
 		$structure['links'][] = $currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $releaseName;
 
 		$this->application->makeStructure($this->path, $structure);
@@ -407,7 +486,7 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase {
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $logsDir);
 		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $historyFile);
-		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $logsDir . DIRECTORY_SEPARATOR . $deploidFile);
+		$this->assertFileExists($this->path . DIRECTORY_SEPARATOR . $logsDir . DIRECTORY_SEPARATOR . $logFile);
 		$this->assertDirectoryExists($this->path . DIRECTORY_SEPARATOR . $currentLink);
 		$this->assertTrue(is_link($this->path . DIRECTORY_SEPARATOR . $currentLink));
 		$this->assertEquals(realpath($this->path . DIRECTORY_SEPARATOR . $releasesDir . DIRECTORY_SEPARATOR . $releaseName), realpath(readlink($this->path . DIRECTORY_SEPARATOR . $currentLink)));
