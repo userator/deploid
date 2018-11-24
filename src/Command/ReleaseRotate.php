@@ -22,13 +22,9 @@ class ReleaseRotate extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$payload = $this->getApplication()->deploidStructureValidate($input->getArgument('path'));
-		if ($payload->getType() == Payload::STRUCTURE_VALIDATE_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
+		$path = $this->getApplication()->absolutePath($input->getArgument('path'), getcwd());
 
-		$payload = $this->getApplication()->deploidReleaseRotate($input->getArgument('quantity'), $input->getArgument('path'));
+		$payload = $this->getApplication()->deploidReleaseRotate($input->getArgument('quantity'), $path);
 		$output->writeln($payload->getMessage());
 		return $payload->getCode();
 	}

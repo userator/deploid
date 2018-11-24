@@ -21,13 +21,9 @@ class StructureClean extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$payload = $this->getApplication()->deploidStructureValidate($input->getArgument('path'));
-		if ($payload->getType() == Payload::STRUCTURE_VALIDATE_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
+		$path = $this->getApplication()->absolutePath($input->getArgument('path'), getcwd());
 
-		$payload = $this->getApplication()->deploidStructureClean($input->getArgument('path'));
+		$payload = $this->getApplication()->deploidStructureClean($path);
 		$output->writeln($payload->getMessage());
 		return $payload->getCode();
 	}

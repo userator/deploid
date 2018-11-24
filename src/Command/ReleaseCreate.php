@@ -21,15 +21,10 @@ class ReleaseCreate extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$payload = $this->getApplication()->deploidStructureValidate($input->getArgument('path'));
-		if ($payload->getType() == Payload::STRUCTURE_VALIDATE_FAIL) {
-			$output->writeln($payload->getMessage());
-			return $payload->getCode();
-		}
-
+		$path = $this->getApplication()->absolutePath($input->getArgument('path'), getcwd());
 		$releaseName = date($this->getApplication()->getReleaseNameFormat());
 
-		$payload = $this->getApplication()->deploidReleaseCreate($releaseName, $input->getArgument('path'));
+		$payload = $this->getApplication()->deploidReleaseCreate($releaseName, $path);
 		$output->writeln($payload->getMessage());
 		return $payload->getCode();
 	}
