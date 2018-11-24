@@ -1,7 +1,7 @@
 {
 	"name": "userator/deploid",
 	"description": "tool provides folder structure for continuous delivery of code.",
-	"type": "library",
+	"type": "project",
 	"license": "GPL-3.0-only",
 	"keywords": ["continuous integration", "continuous delivery", "deploy", "tool", "deploid", "cli", "release provider"],
 	"authors": [
