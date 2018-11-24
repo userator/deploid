@@ -377,7 +377,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$path = $this->absolutePath($path, getcwd());
 		$messages = [];
 
 		foreach ($this->structure as $section => $items) {
@@ -423,8 +422,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
-
-		$path = $this->absolutePath($path, getcwd());
 
 		$messagesSuccess = [];
 		$messagesFail = [];
@@ -550,8 +547,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$path = $this->absolutePath($path, getcwd());
-
 		$releaseDir = $path . DIRECTORY_SEPARATOR . $this->mapping['releases-dir'] . DIRECTORY_SEPARATOR . $release;
 		if (!is_dir($releaseDir)) {
 			$payload->setType(Payload::RELEASE_EXIST_FAIL);
@@ -587,8 +582,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
-
-		$path = $this->absolutePath($path, getcwd());
 
 		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['releases-dir'] . DIRECTORY_SEPARATOR . $release;
 
@@ -627,8 +620,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$path = $this->absolutePath($path, getcwd());
-
 		$proccess = new Process('rm -r ' . realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['releases-dir'] . DIRECTORY_SEPARATOR . $release);
 		$proccess->run();
 
@@ -658,8 +649,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
-
-		$path = $this->absolutePath($path, getcwd());
 
 		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['releases-dir'] . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
@@ -693,8 +682,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
-
-		$path = $this->absolutePath($path, getcwd());
 
 		$dirs = glob(realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['releases-dir'] . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
@@ -735,8 +722,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
-
-		$path = $this->absolutePath($path, getcwd());
 
 		$link = realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['current-link'];
 
@@ -784,8 +769,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			return $payload;
 		}
 
-		$path = $this->absolutePath($path, getcwd());
-
 		$releaseDir = realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['releases-dir'] . DIRECTORY_SEPARATOR . $release;
 		$currentLink = realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['current-link'];
 
@@ -826,8 +809,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setCode(255);
 			return $payload;
 		}
-
-		$path = $this->absolutePath($path, getcwd());
 
 		$releases = glob(realpath($path) . DIRECTORY_SEPARATOR . $this->mapping['releases-dir'] . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
 
