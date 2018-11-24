@@ -1,7 +1,5 @@
 <?php
 
-ini_set("phar.readonly", 0);
-
 $pharFile = __DIR__ . '/../build/deploid.phar';
 
 if (!is_dir(__DIR__ . '/../vendor')) {
