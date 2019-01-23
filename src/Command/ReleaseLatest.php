@@ -15,7 +15,7 @@ class ReleaseLatest extends Command {
 
 	protected function configure() {
 		$this->setName('release:latest');
-		$this->setDescription('Laatest release');
+		$this->setDescription('Latest release');
 		$this->setHelp('This command show latest release');
 		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
 	}

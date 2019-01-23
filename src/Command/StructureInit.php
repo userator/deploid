@@ -21,10 +21,16 @@ class StructureInit extends Command {
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$path = $this->getApplication()->absolutePath($input->getArgument('path'), getcwd());
-		
-		$payload = $this->getApplication()->deploidStructureInit($path);
-		$output->writeln($payload->getMessage());
-		return $payload->getCode();
+
+		if ($this->getApplication()->isStructureInitialized($path)) {
+			$payload = $this->getApplication()->deploidStructureClean($path);
+			$output->writeln($payload->getMessage());
+			return $payload->getCode();
+		} else {
+			$payload = $this->getApplication()->deploidStructureInit($path);
+			$output->writeln($payload->getMessage());
+			return $payload->getCode();
+		}
 	}
 
 }

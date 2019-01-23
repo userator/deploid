@@ -22,11 +22,21 @@ before_script:
   - wget https://scrutinizer-ci.com/ocular.phar -O ./ocular
   - chmod +x ./ocular
   - sudo mv ./ocular /usr/local/bin/
+  - echo "phpcs install"
+  - wget https://github.com/squizlabs/PHP_CodeSniffer/releases/download/3.3.2/phpcs.phar -O ./phpcs
+  - chmod +x ./phpcs
+  - sudo mv ./phpcs /usr/local/bin/
+  - echo "phpmd install"
+  - wget http://static.phpmd.org/php/latest/phpmd.phar -O ./phpmd
+  - chmod +x ./phpmd
+  - sudo mv ./phpmd /usr/local/bin/
 script:
   - /usr/local/bin/composer install --no-dev
   - /usr/local/bin/phpunit -c phpunit.xml --colors=always
   - /usr/local/bin/phpunit --coverage-clover=coverage.clover
   - /usr/local/bin/ocular code-coverage:upload --format=php-clover coverage.clover
+  - /usr/local/bin/phpcs --standard=PSR2 ./src
+  - /usr/local/bin/phpmd ./src text codesize,design,naming
 before_deploy:
   - php -d phar.readonly=0 build/make-phar.php
 deploy:

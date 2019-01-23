@@ -5,6 +5,7 @@ namespace Deploid;
 use Symfony\Component\Console\Application as ConsoleApplication;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Process\Process;
 
 class Application extends ConsoleApplication implements LoggerAwareInterface {
@@ -164,7 +165,42 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 	/* tools */
 
-	static public function readConfigFile($file) {
+	public static function initListener(ConsoleCommandEvent $event) {
+		if (!$event->getInput()->hasArgument('path')) return null;
+
+		/** @var \Deploid\Application */
+		$application = $event->getCommand()->getApplication();
+
+		$parentpath = $application->absolutePath($event->getInput()->getArgument('path'), getcwd());
+		$relativepath = $application->getConfigInternal()['mapping']['config-file'];
+
+		$path = $parentpath . DIRECTORY_SEPARATOR . $relativepath;
+
+		$external = (is_file($path)) ? $application->readConfigFile($path) : $application->getConfigDefault();
+		$internal = $application->getConfigInternal();
+
+		$config = $application->calcConfig($internal, $external);
+
+		$application->init($config);
+	}
+
+	public function existConfigFile($path) {
+		return is_file($path . DIRECTORY_SEPARATOR . $this->configInternal['mapping']['config-file']);
+	}
+	
+	public function isStructureInitialized($path) {
+		
+	}
+	
+	public function existStructure($path) {
+		
+	}
+	
+	public function existProjectDir($path) {
+		return;
+	}
+	
+	public static function readConfigFile($file) {
 		if (empty($file)) throw new \InvalidArgumentException('empty "file" agrument');
 		if (!is_file($file)) throw new \InvalidArgumentException('file "' . $file . '" not found');
 
@@ -177,7 +213,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		return $config;
 	}
 
-	static public function writeConfigFile($file, array $config) {
+	public static function writeConfigFile($file, array $config) {
 		if (empty($file)) throw new \InvalidArgumentException('empty "file" agrument');
 		if (!is_file($file)) throw new \InvalidArgumentException('file "' . $file . '" not found');
 
@@ -191,7 +227,14 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	}
 
 	public function calcConfig(array $external, array $internal) {
-		return array_merge_recursive($external, $internal);
+		$raw = array_merge_recursive($external, $internal);
+		$config = [];
+		$config['name'] = $raw['name'];
+		$config['release-name-format'] = $raw['release-name-format'];
+		$config['chmod'] = $raw['chmod'];
+		$config['structure'] = $raw['structure'];
+		$config['mapping'] = $raw['mapping'];
+		return $config;
 	}
 
 	public function init(array $config) {
@@ -326,6 +369,17 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		return $structureDiff;
 	}
 
+	public function calcStructureInit($release, $releasesDir, $currentLink) {
+		return [
+			'dirs' => [
+				$releasesDir . DIRECTORY_SEPARATOR . $release,
+			],
+			'links' => [
+				$currentLink . ':' . $releasesDir . DIRECTORY_SEPARATOR . $release,
+			],
+		];
+	}
+
 	public function flatPaths($path, array $structure) {
 		if (empty($path)) throw new \InvalidArgumentException('empty path');
 
@@ -434,7 +488,6 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			}
 		}
 
-
 		foreach ($this->structure as $section => $items) {
 			if (empty($items)) continue;
 			foreach ($items as $item) {
@@ -486,6 +539,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 			$payload->setType(Payload::STRUCTURE_INIT_FAIL);
 			$payload->setMessage($messagesFail);
 			$payload->setCode(255);
+			return $payload;
 		}
 
 		$payload->setType(Payload::STRUCTURE_INIT_SUCCESS);
@@ -512,15 +566,25 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		$pathsDirty = $this->flatPaths($path, $this->scanStructure($path));
 		$pathsDiff = array_diff($pathsDirty, $pathsClean);
 
+		$messages = [];
 		foreach ($pathsDiff as $item) {
 			if (empty($item)) continue;
-			if (is_link($item)) unlink($item);
-			if (is_file($item)) unlink($item);
-			if (is_dir($item)) rmdir($item);
+			if (is_link($item)) {
+				unlink($item);
+				$messages[] = 'link "' . $item . '" was cleaned';
+			}
+			if (is_file($item)) {
+				unlink($item);
+				$messages[] = 'file "' . $item . '" was cleaned';
+			}
+			if (is_dir($item)) {
+				rmdir($item);
+				$messages[] = 'dir "' . $item . '" was cleaned';
+			}
 		}
 
 		$payload->setType(Payload::STRUCTURE_CLEAN_SUCCESS);
-		$payload->setMessage(array_merge(['cleaned items:'], $pathsDiff));
+		$payload->setMessage($messages);
 		$payload->setCode(0);
 		return $payload;
 	}
