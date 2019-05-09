@@ -181,7 +181,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 
 		$config = $application->calcConfig($internal, $external);
 
-		$application->init($config);
+		$application->configure($config);
 	}
 
 	public function existConfigFile($path) {
@@ -237,7 +237,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 		return $config;
 	}
 
-	public function init(array $config) {
+	public function configure(array $config) {
 		$this->name = $config['name'];
 		$this->releaseNameFormat = $config['release-name-format'];
 		$this->chmod = intval($config['chmod'], 8);
@@ -282,7 +282,7 @@ class Application extends ConsoleApplication implements LoggerAwareInterface {
 	public function makeStructure($path, array $structure) {
 		if (empty($path)) throw new \InvalidArgumentException('empty path');
 
-		if (empty($structure)) true;
+		if (empty($structure)) return true;
 
 		foreach ($structure as $section => $items) {
 			if (empty($items)) continue;
