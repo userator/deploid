@@ -1,40 +1,48 @@
 {
-	"name": "userator/deploid",
-	"description": "tool provides folder structure for continuous delivery of code.",
-	"type": "project",
-	"license": "GPL-3.0-only",
-	"keywords": ["continuous integration", "continuous delivery", "deploy", "tool", "deploid", "cli", "release provider"],
-	"authors": [
-		{
-			"name": "userator",
-			"email": "userator@ya.ru",
-			"homepage": "https://github.com/userator"
-		}
-	],
-	"minimum-stability": "stable",
-	"require": {
-		"php": ">=5.6",
-		"ext-json": "*",
-		"symfony/console": "v3.4.*",
-		"symfony/process": "v3.4.*",
-		"symfony/event-dispatcher": "v3.4.*",
-		"monolog/monolog": "1.23.*",
-		"webmozart/path-util": "2.3.*"
-	},
-	"require-dev": {
-		"phpunit/phpunit": "5.7.*"
-	},
-	"autoload": {
-		"psr-4": {
-			"Deploid\\": "src"
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Deploid\\": "tests"
-		}
-	},
-	"bin": [
-		"bin/deploid.php"
-	]
+    "name": "userator/deploid",
+    "description": "tool provides folder structure for continuous delivery of code.",
+    "type": "project",
+    "license": "GPL-3.0-only",
+    "keywords": [
+        "continuous integration",
+        "continuous delivery",
+        "deploy",
+        "tool",
+        "deploid",
+        "cli",
+        "release provider"
+    ],
+    "authors": [
+        {
+            "name": "userator",
+            "email": "userator@ya.ru",
+            "homepage": "https://github.com/userator"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.6",
+        "ext-json": "*",
+        "symfony/console": "v3.4.*",
+        "symfony/process": "v3.4.*",
+        "symfony/event-dispatcher": "v3.4.*",
+        "monolog/monolog": "1.23.*",
+        "webmozart/path-util": "2.3.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "5.7.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Deploid\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Deploid\\": "tests"
+        }
+    },
+    "bin": [
+        "bin/deploid.php"
+    ]
 }

@@ -10,21 +10,24 @@ use Symfony\Component\Console\Input\InputArgument;
 /**
  * @method \Deploid\Application getApplication() return application object
  */
-class StructureValidate extends Command {
+class StructureValidate extends Command
+{
 
-	protected function configure() {
-		$this->setName('structure:validate');
-		$this->setDescription('Validate existing directory structure');
-		$this->setHelp('This command validate existing directory structure in the specified path');
-		$this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
-	}
+    protected function configure()
+    {
+        $this->setName('structure:validate');
+        $this->setDescription('Validate existing directory structure');
+        $this->setHelp('This command validate existing directory structure in the specified path');
+        $this->addArgument('path', InputArgument::OPTIONAL, 'path to target directory', getcwd());
+    }
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
-		$path = $this->getApplication()->absolutePath($input->getArgument('path'), getcwd());
-		
-		$payload = $this->getApplication()->deploidStructureValidate($path);
-		$output->writeln($payload->getMessage());
-		return $payload->getCode();
-	}
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $path = $this->getApplication()->absolutePath($input->getArgument('path'), getcwd());
+
+        $payload = $this->getApplication()->deploidStructureValidate($path);
+        $output->writeln($payload->getMessage());
+        return $payload->getCode();
+    }
 
 }

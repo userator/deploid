@@ -8,7 +8,7 @@ php:
   - 7.2
 branches:
   only:
-  - master
+    - master
 before_script:
   - echo "composer install"
   - wget https://getcomposer.org/download/1.7.2/composer.phar -O ./composer
